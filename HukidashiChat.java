@@ -78,8 +78,6 @@ public class HukidashiChat
 		File textureFile = new File(ModLoader.getMinecraftInstance().mcDataDir.toString() + "/config/HukidashiChat/hukidashi.png");
 		File textureDir = new File(ModLoader.getMinecraftInstance().mcDataDir.toString() + "/config/HukidashiChat");
 		
-		System.out.println(ModLoader.getMinecraftInstance().mcDataDir.toString() + "/config/HukidashiChat/hukidashi.png");
-		
 		if(!textureDir.exists())
 		{
 			textureDir.mkdir();

@@ -31,12 +31,15 @@ public class HukidashiChatTick implements ITickHandler
 	int[] suspendTime = {0, 0, 0, 0};
 	String[][] writingString = new String[4][2];
 	
+	int[][] guiPosition = {{30,30},{230,30},{30,130},{230,130}};
+	// X, Y
+	
 	ResourceLocation resourceLocation;
 	
 	public HukidashiChatTick(HashMap Options)
 	{
 		this.Options = Options;
-		resourceLocation = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
+		resourceLocation = new ResourceLocation("hukidashichat:textures/gui/hukidashi2.png");
 	}
 
 	@Override
@@ -53,11 +56,15 @@ public class HukidashiChatTick implements ITickHandler
 		MC.func_110434_K().func_110577_a(resourceLocation);
 
 		Gui gui = new Gui();
-		gui.drawTexturedModalRect(45, 45, 0, 0, 120, 68);
+		gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, 100, 55);
 		
-		MC.fontRenderer.drawString(writeString[0], 54, 54, 65793);
-		MC.fontRenderer.drawString(writeString[1], 54, 69, 65793);
+		MC.fontRenderer.drawStringWithShadow(writeString[0], guiPosition[suspendNumber][0] + 9, guiPosition[suspendNumber][1] + 5, 16777215);
+		MC.fontRenderer.drawString(writeString[1], guiPosition[suspendNumber][0] + 10, guiPosition[suspendNumber][1] + 18, 65793);
 		
+		System.out.println(MC.theWorld.playerEntities);
+		
+		// 16777215 white
+		// 65793 black
 		
 		suspendTime[suspendNumber]--;
 	}
