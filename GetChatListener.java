@@ -1,7 +1,9 @@
 package anaso.HukidashiChat;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.packet.NetHandler;
 import net.minecraft.network.packet.Packet3Chat;
+import net.minecraft.src.ModLoader;
 import cpw.mods.fml.common.network.IChatListener;
 import cpw.mods.fml.common.network.IConnectionHandler;
 import com.google.gson.*;
@@ -20,7 +22,7 @@ public class GetChatListener implements IChatListener
 
 	@Override
 	public Packet3Chat clientChat(NetHandler handler, Packet3Chat message) {
-		System.out.println("GetChatMessage : " + message.message);
+		//System.out.println("GetChatMessage : " + message.message);
 		
 		messageClass = gson.fromJson(message.message, MessageClass.class);
 		
@@ -30,6 +32,7 @@ public class GetChatListener implements IChatListener
 			
 			HukidashiChatTick.listenerString = messageClass.getUsing();
 		}
+		
 		return message;
 	}
 }

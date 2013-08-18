@@ -34,12 +34,26 @@ public class HukidashiChatTick implements ITickHandler
 	int[][] guiPosition = {{30,30},{230,30},{30,130},{230,130}};
 	// X, Y
 	
+	int alpha = 255;
+	int displayTime = 200;
+	int[][] guiOptionPosition;
+	int[] textureSize;
+	int[] textPosition;
+	
 	ResourceLocation resourceLocation;
 	
 	public HukidashiChatTick(HashMap Options)
 	{
 		this.Options = Options;
-		resourceLocation = new ResourceLocation("hukidashichat:textures/gui/hukidashi2.png");
+		
+		guiOptionPosition = (int[][])Options.get("GuiPosition");
+		guiPosition = (int[][])Options.get("GuiPosition");
+		alpha = (Integer)(Options.get("Alpha"));
+		displayTime = (Integer)(Options.get("DisplayTime"));
+		textureSize = (int[])Options.get("TextureSize");
+		textPosition = (int[])Options.get("TextPosition");
+		
+		resourceLocation = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
 	}
 
 	@Override
@@ -52,16 +66,16 @@ public class HukidashiChatTick implements ITickHandler
 	{
 		Minecraft MC = ModLoader.getMinecraftInstance();
 		
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha/255);
 		MC.func_110434_K().func_110577_a(resourceLocation);
 
 		Gui gui = new Gui();
-		gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, 100, 55);
+		gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
 		
-		MC.fontRenderer.drawStringWithShadow(writeString[0], guiPosition[suspendNumber][0] + 9, guiPosition[suspendNumber][1] + 5, 16777215);
-		MC.fontRenderer.drawString(writeString[1], guiPosition[suspendNumber][0] + 10, guiPosition[suspendNumber][1] + 18, 65793);
+		MC.fontRenderer.drawStringWithShadow(writeString[0], guiPosition[suspendNumber][0] + textPosition[0], guiPosition[suspendNumber][1] + textPosition[1], 16777215);
+		MC.fontRenderer.drawString(writeString[1], guiPosition[suspendNumber][0] + textPosition[2], guiPosition[suspendNumber][1] + textPosition[3], 65793);
 		
-		System.out.println(MC.theWorld.playerEntities);
+		// System.out.println(MC.theWorld.playerEntities);
 		
 		// 16777215 white
 		// 65793 black
@@ -90,7 +104,19 @@ public class HukidashiChatTick implements ITickHandler
 							writingString[i][1] = listenerString[1];
 							listenerString[0] = "";
 							listenerString[1] = "";
-							suspendTime[i] = 200;
+							suspendTime[i] = displayTime;
+							ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
+							
+							if(guiOptionPosition[i][0] < 0)
+							{
+								guiPosition[i][0] = SR.getScaledWidth() + guiOptionPosition[i][0] - textureSize[0];
+								System.out.println(guiPosition[i][0]);
+							}
+							if(guiOptionPosition[i][1] < 0)
+							{
+								guiPosition[i][1] = SR.getScaledHeight() + guiOptionPosition[i][1] - textureSize[1];
+								System.out.println(guiPosition[i][1]);
+							}
 							
 							break;
 						}
@@ -115,5 +141,8 @@ public class HukidashiChatTick implements ITickHandler
 	}
 
 	@Override
-	public String getLabel() { return null; }
+	public String getLabel()
+	{
+		return null;
+	}
 }
