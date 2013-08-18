@@ -54,7 +54,7 @@ public class HukidashiChat
 		try
 		{
 			cfg.load();
-			Property propDisplayTime  = cfg.get(cfg.CATEGORY_GENERAL, "Display time", 200, "Value is Tick (1[Tick] = 1/20[Second])");
+			Property propDisplayTime  = cfg.get(cfg.CATEGORY_GENERAL, "Display Time", 200, "Value is Tick (1[Tick] = 1/20[Second])");
 			Property propAlpha = cfg.get(cfg.CATEGORY_GENERAL, "Gui Alpha", 255, "Min = 0, Max = 255");
 			
 			Property propGuiPos1X = cfg.get(cfg.CATEGORY_GENERAL, "Gui Pos 1 X", 20, "Minus Value is count LowerRight");
