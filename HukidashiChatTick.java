@@ -40,6 +40,12 @@ public class HukidashiChatTick implements ITickHandler
 	int[] textureSize;
 	int[] textPosition;
 	
+	int nameColor = 0;
+	int textColor = 0;
+	
+	boolean nameShadow = false;
+	boolean textShadow = false;
+	
 	ResourceLocation resourceLocation;
 	
 	public HukidashiChatTick(HashMap Options)
@@ -52,6 +58,41 @@ public class HukidashiChatTick implements ITickHandler
 		displayTime = (Integer)(Options.get("DisplayTime"));
 		textureSize = (int[])Options.get("TextureSize");
 		textPosition = (int[])Options.get("TextPosition");
+		int[] tempNameColor = (int[])Options.get("NameColor");
+		int[] tempTextColor = (int[])Options.get("TextColor");
+		
+		if(tempNameColor[3] != 0)
+		{
+			nameShadow = true;
+		}
+		if(tempTextColor[3] != 0)
+		{
+			textShadow = true;
+		}
+		
+		/*
+		if(alpha < 0 || alpha > 255)
+		{
+			alpha = 255;
+		}
+		
+		for(int i = 0; i < 3; i++)
+		{
+			if(tempNameColor[i] < 0 || tempNameColor[i] > 255)
+			{
+				tempNameColor[i] = 255;
+			}
+			if(tempTextColor[i] < 0 || tempTextColor[i] > 255)
+			{
+				tempTextColor[i] = 0;
+			}
+		}
+		*/
+		
+		nameColor = ((tempNameColor[0] & 255) << 16) + ((tempNameColor[1] & 255) << 8) + (tempNameColor[2] & 255) + ((alpha & 255) << 24);
+		textColor = ((tempTextColor[0] & 255) << 16) + ((tempTextColor[1] & 255) << 8) + (tempTextColor[2] & 255) + ((alpha & 255) << 24);
+		
+		System.out.println(nameColor + " : " + textColor + " : " + tempNameColor[3] + " : " + tempTextColor[3]);
 		
 		resourceLocation = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
 	}
@@ -72,8 +113,8 @@ public class HukidashiChatTick implements ITickHandler
 		Gui gui = new Gui();
 		gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
 		
-		MC.fontRenderer.drawStringWithShadow(writeString[0], guiPosition[suspendNumber][0] + textPosition[0], guiPosition[suspendNumber][1] + textPosition[1], 16777215);
-		MC.fontRenderer.drawString(writeString[1], guiPosition[suspendNumber][0] + textPosition[2], guiPosition[suspendNumber][1] + textPosition[3], 65793);
+		MC.fontRenderer.drawString(writeString[0], guiPosition[suspendNumber][0] + textPosition[0], guiPosition[suspendNumber][1] + textPosition[1], nameColor, nameShadow);
+		MC.fontRenderer.drawString(writeString[1], guiPosition[suspendNumber][0] + textPosition[2], guiPosition[suspendNumber][1] + textPosition[3], textColor, textShadow);
 		
 		// System.out.println(MC.theWorld.playerEntities);
 		

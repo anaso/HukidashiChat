@@ -15,6 +15,7 @@ import net.minecraft.item.*;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.Property;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.lwjgl.input.Keyboard;
 import cpw.mods.fml.client.registry.KeyBindingRegistry;
 import cpw.mods.fml.client.registry.KeyBindingRegistry.KeyHandler;
@@ -74,6 +75,17 @@ public class HukidashiChat
 			Property propNamePosY = cfg.get(cfg.CATEGORY_GENERAL, "Player Name Pos Y", 5);
 			Property propTextPosX = cfg.get(cfg.CATEGORY_GENERAL, "Chat Text Pos X", 10);
 			Property propTextPosY = cfg.get(cfg.CATEGORY_GENERAL, "Chat Text Pos Y", 18);
+			
+			Property propNameColorR = cfg.get(cfg.CATEGORY_GENERAL, "Player Name Color Red", 255, "Min = 0, Max = 255");
+			Property propNameColorG = cfg.get(cfg.CATEGORY_GENERAL, "Player Name Color Green", 255, "Min = 0, Max = 255");
+			Property propNameColorB = cfg.get(cfg.CATEGORY_GENERAL, "Player Name Color Blue", 255, "Min = 0, Max = 255");
+			Property propNameShadow = cfg.get(cfg.CATEGORY_GENERAL, "Player Name Shadow", true);
+			
+			Property propTextColorR = cfg.get(cfg.CATEGORY_GENERAL, "Chat Text Color Red", 0, "Min = 0, Max = 255");
+			Property propTextColorG = cfg.get(cfg.CATEGORY_GENERAL, "Chat Text Color Green", 0, "Min = 0, Max = 255");
+			Property propTextColorB = cfg.get(cfg.CATEGORY_GENERAL, "Chat Text Color Blue", 0, "Min = 0, Max = 255");
+			Property propTextShadow = cfg.get(cfg.CATEGORY_GENERAL, "Chat Text Shadow", false);
+			
 
 
 			int displayTime = propDisplayTime.getInt();
@@ -93,12 +105,17 @@ public class HukidashiChat
 			
 			int[] textPos = {propNamePosX.getInt(), propNamePosY.getInt(), propTextPosX.getInt(), propTextPosY.getInt()};
 			// 名前X 名前Y 本文X 本文Y
+			
+			int[] nameColor = {propNameColorR.getInt(),propNameColorG.getInt(),propNameColorB.getInt(),BooleanUtils.toInteger(propNameShadow.getBoolean(true))};
+			int[] textColor = {propTextColorR.getInt(),propTextColorG.getInt(),propTextColorB.getInt(),BooleanUtils.toInteger(propTextShadow.getBoolean(false))};
 
 			Options.put("DisplayTime", displayTime);
 			Options.put("Alpha", alpha);
 			Options.put("GuiPosition", tempGuiPos);
 			Options.put("TextureSize", textureSize);
 			Options.put("TextPosition", textPos);
+			Options.put("NameColor", nameColor);
+			Options.put("TextColor", textColor);
 		}
 		catch (Exception e)
 		{
