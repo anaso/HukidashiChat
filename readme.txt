@@ -8,7 +8,7 @@ Minecraft Mod
 設定ファイルはHukidashiChat.cfgです。
 
 描画位置の設定にクセがあり、MinecraftのGUIスケールがNormalのときは値が2倍、
-Largeのときは値が4倍されます。（多分
+Largeのときは値が3倍されます。（多分
 
 -設定内容-
  -基本-

@@ -4,8 +4,9 @@ import java.util.List;
 
 public class MessageClass
 {
-	String translate;
-	String[] using;
+	String translate = "";
+	String[] using = {"",""};
+	String text = "";
 	
 	String getTranslate()
 	{
@@ -15,5 +16,10 @@ public class MessageClass
 	String[] getUsing()
 	{
 		return using;
+	}
+	
+	String getText()
+	{
+		return text;
 	}
 }
