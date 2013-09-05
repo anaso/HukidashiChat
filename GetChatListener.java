@@ -1,5 +1,7 @@
 package anaso.HukidashiChat;
 
+import java.util.HashMap;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetLoginHandler;
@@ -20,7 +22,14 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 	
 	MessageClass messageClass;
 	Gson gson = new Gson();
+	
+	HashMap Options;
 
+	GetChatListener(HashMap Options)
+	{
+		this.Options = Options;
+	}
+	
 	@Override
 	public Packet3Chat serverChat(NetHandler handler, Packet3Chat message) {
 		return message;
@@ -36,33 +45,7 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 		{
 			Minecraft MC = ModLoader.getMinecraftInstance();
 			
-			if(messageClass.getTranslate().equals("chat.type.text"))
-			{
-				//System.out.println("GetUsing : " + messageClass.getUsing()[0]);
-				
-				if(!MC.thePlayer.username.equals(messageClass.getUsing()[0]))
-				{
-					HukidashiChatTick.listenerString = messageClass.getUsing();
-				}
-			}
-			
-			if(!messageClass.getText().equals(""))
-			{
-				int start = -1, end = -1;
-				start = messageClass.getText().indexOf("\u003c");
-				end = messageClass.getText().indexOf("\u003e");
-				
-				//System.out.println("in  " + start + " : " + end);
-				
-				if(start >= 0 && end >= 0 && start < end)
-				{
-					if(!MC.thePlayer.username.equals(messageClass.getText().substring(start + 1, end)))
-					{
-						HukidashiChatTick.listenerString[1] = messageClass.getText().substring(end + 2);
-						HukidashiChatTick.listenerString[0] = messageClass.getText().substring(start + 1, end);
-					}
-				}
-			}
+			HukidashiChatTick.listenerString = getMessage(MC);
 		}
 		
 		return message;
@@ -106,5 +89,75 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 	public void clientLoggedIn(NetHandler clientHandler, INetworkManager manager, Packet1Login login) {
 		// TODO 自動生成されたメソッド・スタブ
 		
+	}
+	
+	public String[] getMessage(Minecraft MC)
+	{
+		// メッセージの取得
+		String[] tempReturn = {"",""};
+		
+		if(messageClass.getTranslate().equals("chat.type.text"))
+		{
+			// 公式サーバー用
+			try
+			{
+				//System.out.println("Get : " + Boolean.parseBoolean((String)Options.get("IncludeMyMessage")));
+				
+
+				if(!MC.thePlayer.username.equals(messageClass.getUsing()[0]))
+				{
+					tempReturn = messageClass.getUsing();
+				}
+				else if(Boolean.valueOf((String)Options.get("IncludeMyMessage")).booleanValue())
+				{
+					tempReturn = messageClass.getUsing();
+				}
+				
+				System.out.println(MC.theWorld.getPlayerEntityByName(messageClass.getUsing()[0]));
+			}
+			catch(Exception e)  //エラー吐いたら無かったことに
+			{
+				System.out.println(e);
+				
+				tempReturn[1] = "";
+				tempReturn[0] = "";
+			}
+		}
+		
+		if(!messageClass.getText().equals(""))
+		{
+			// Bukkit用
+			try
+			{
+				int start = -1, end = -1;
+				start = messageClass.getText().indexOf("\u003c");
+				end = messageClass.getText().indexOf("\u003e");
+				
+				//System.out.println("in  " + start + " : " + end);
+				
+				if(start >= 0 && end >= 0 && start < end)
+				{
+					if(!MC.thePlayer.username.equals(messageClass.getText().substring(start + 1, end)))
+					{
+						tempReturn[1] = messageClass.getText().substring(end + 2);
+						tempReturn[0] = messageClass.getText().substring(start + 1, end);
+					}
+					else if(Boolean.valueOf((String)Options.get("IncludeMyMessage")).booleanValue())
+					{
+						tempReturn[1] = messageClass.getText().substring(end + 2);
+						tempReturn[0] = messageClass.getText().substring(start + 1, end);
+					}
+				}
+			}
+			catch(Exception e)  //エラー吐いたら無かったことに
+			{
+				System.out.println(e);
+				
+				tempReturn[1] = "";
+				tempReturn[0] = "";
+			}
+		}
+		
+		return tempReturn;
 	}
 }

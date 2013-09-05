@@ -42,6 +42,8 @@ public class HukidashiChatTick implements ITickHandler
 	int[] textureSize;
 	int[] textPosition;
 	
+	double[][] playerPos = {{0,0},{0,0},{0,0},{0,0}};
+	
 	int nameColor = 0;
 	int textColor = 0;
 	
@@ -186,8 +188,6 @@ public class HukidashiChatTick implements ITickHandler
 								guiPosition[i][1] = SR.getScaledHeight() + guiRawPosition[i][1] - textureSize[1];
 							}
 							
-							System.out.println(MC.fontRenderer.getStringWidth(writingString[i][1]));
-							
 							break;
 						}
 					}
@@ -197,6 +197,7 @@ public class HukidashiChatTick implements ITickHandler
 				{
 					if(suspendTime[i] > 0)
 					{
+						
 						renderHukidashiChat(writingString[i], i);
 					}
 				}
