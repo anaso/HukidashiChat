@@ -50,7 +50,7 @@ public class HukidashiChatTick implements ITickHandler
 	boolean nameShadow = false;
 	boolean textShadow = false;
 	
-	int stringColumn = 5;
+	int stringColumn = 4;
 	int stringWidth = 83;
 	
 	ResourceLocation resourceLocation;
@@ -73,6 +73,9 @@ public class HukidashiChatTick implements ITickHandler
 		int[] tempNameColor = (int[])Options.get("NameColor");
 		int[] tempTextColor = (int[])Options.get("TextColor");
 		
+		stringColumn = (Integer)Options.get("StringColumn");
+		stringWidth = (Integer)Options.get("StringWidth");
+		
 		if(tempNameColor[3] != 0)
 		{
 			nameShadow = true;
@@ -85,10 +88,11 @@ public class HukidashiChatTick implements ITickHandler
 		nameColor = ((tempNameColor[0] & 255) << 16) + ((tempNameColor[1] & 255) << 8) + (tempNameColor[2] & 255) + ((alpha & 255) << 24);
 		textColor = ((tempTextColor[0] & 255) << 16) + ((tempTextColor[1] & 255) << 8) + (tempTextColor[2] & 255) + ((alpha & 255) << 24);
 		
-		System.out.println(nameColor + " : " + textColor + " : " + tempNameColor[3] + " : " + tempTextColor[3]);
+		//System.out.println(nameColor + " : " + textColor + " : " + tempNameColor[3] + " : " + tempTextColor[3]);
 		
 		resourceLocation = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
 		
+		stringColumn++; // 配列の0が名前のため、1つ多くしておく
 		writingString = new String[4][stringColumn];
 		for(int i = 0; i < 4; i ++)
 		{
@@ -197,7 +201,6 @@ public class HukidashiChatTick implements ITickHandler
 				{
 					if(suspendTime[i] > 0)
 					{
-						
 						renderHukidashiChat(writingString[i], i);
 					}
 				}

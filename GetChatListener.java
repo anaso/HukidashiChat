@@ -23,11 +23,29 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 	MessageClass messageClass;
 	Gson gson = new Gson();
 	
+	String[] mutePlayer, muteMessage;
+	
+	boolean enableMutePlayer = false, enableMuteMessage = false;
+	
 	HashMap Options;
 
 	GetChatListener(HashMap Options)
 	{
 		this.Options = Options;
+		
+		mutePlayer = (String[])Options.get("MutePlayer");
+		if(mutePlayer != null)
+		{
+			enableMutePlayer = true;
+		}
+		
+		muteMessage = (String[])Options.get("MuteMessage");
+		
+		System.out.println("In" + muteMessage);
+		if(muteMessage != null)
+		{
+			enableMuteMessage = true;
+		}
 	}
 	
 	@Override
@@ -45,7 +63,32 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 		{
 			Minecraft MC = ModLoader.getMinecraftInstance();
 			
-			HukidashiChatTick.listenerString = getMessage(MC);
+			//HukidashiChatTick.listenerString = getMessage(MC);
+			
+			String[] getMessage = getMessage(MC);
+			
+			if(enableMutePlayer || enableMuteMessage)
+			{
+				for(String mutePlayerString:mutePlayer)
+				{
+					if(getMessage[0].equals(mutePlayerString))
+					{
+						getMessage[0] = "";
+						getMessage[1] = "";
+					}
+				}
+				
+				for(String muteMessageString:muteMessage)
+				{
+					if(getMessage[1].indexOf(muteMessageString) > -1)
+					{
+						getMessage[0] = "";
+						getMessage[1] = "";
+					}
+				}
+			}
+			
+			HukidashiChatTick.listenerString = getMessage;
 		}
 		
 		return message;

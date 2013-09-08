@@ -51,6 +51,8 @@ public class HukidashiChat
 	String guiPos = "gui_position";
 	String textColor = "text_color";
 	
+	String[] empty = {""};
+	
 	@EventHandler
 	public void PreInit(FMLPreInitializationEvent event)
 	{
@@ -70,6 +72,9 @@ public class HukidashiChat
 			Property propGuiPos3Y = cfg.get(guiPos, "Gui Pos 3 Y", -60, "Minus Value is count LowerRight");
 			Property propGuiPos4X = cfg.get(guiPos, "Gui Pos 4 X", -20, "Minus Value is count LowerRight");
 			Property propGuiPos4Y = cfg.get(guiPos, "Gui Pos 4 Y", -60, "Minus Value is count LowerRight");
+			
+			Property propStringColumn = cfg.get(guiPos, "String Column", 4);
+			Property propStringWidth = cfg.get(guiPos, "String Width", 83);
 			
 			Property propTextureSizeX = cfg.get(cfg.CATEGORY_GENERAL, "Gui Texture Size X", 100);
 			Property propTextureSizeY = cfg.get(cfg.CATEGORY_GENERAL, "Gui Texture Size Y", 55);
@@ -91,6 +96,12 @@ public class HukidashiChat
 			
 			Property propIncludeMyMessage = cfg.get(cfg.CATEGORY_GENERAL, "Include My Message", false);
 			
+			Property propMutePlayer = cfg.get(cfg.CATEGORY_GENERAL, "Mute Player", empty);
+			Property propMuteMessage = cfg.get(cfg.CATEGORY_GENERAL, "Mute Message", empty);
+			
+			Property propViewAllMessage = cfg.get(cfg.CATEGORY_GENERAL, "View All Message", false);
+			Property propPlayerSpace = cfg.get(cfg.CATEGORY_GENERAL, "Player Space", 75);
+
 
 
 			int displayTime = propDisplayTime.getInt();
@@ -106,6 +117,9 @@ public class HukidashiChat
 			int guiPos4Y = propGuiPos4Y.getInt();
 			int[][] tempGuiPos = {{guiPos1X,guiPos1Y},{guiPos2X,guiPos2Y},{guiPos3X,guiPos3Y},{guiPos4X,guiPos4Y}};
 			
+			int stringColumn = propStringColumn.getInt();
+			int stringWidth = propStringWidth.getInt();
+			
 			int[] textureSize = {propTextureSizeX.getInt(),propTextureSizeY.getInt()};
 			
 			int[] textPos = {propNamePosX.getInt(), propNamePosY.getInt(), propTextPosX.getInt(), propTextPosY.getInt()};
@@ -113,17 +127,28 @@ public class HukidashiChat
 			
 			int[] nameColor = {propNameColorR.getInt(),propNameColorG.getInt(),propNameColorB.getInt(),BooleanUtils.toInteger(propNameShadow.getBoolean(true))};
 			int[] textColor = {propTextColorR.getInt(),propTextColorG.getInt(),propTextColorB.getInt(),BooleanUtils.toInteger(propTextShadow.getBoolean(false))};
+			// 赤 青 緑 影
 
 			String includeMyMessage = Boolean.valueOf(propIncludeMyMessage.getBoolean(false)).toString();
+			
+			String[] mutePlayer = propMutePlayer.getStringList();
+			String[] muteMessage = propMuteMessage.getStringList();
+			
+			int playerSpace = propPlayerSpace.getInt();
 			
 			Options.put("DisplayTime", displayTime);
 			Options.put("Alpha", alpha);
 			Options.put("GuiPosition", tempGuiPos);
+			Options.put("StringColumn", stringColumn);
+			Options.put("StringWidth", stringWidth);
 			Options.put("TextureSize", textureSize);
 			Options.put("TextPosition", textPos);
 			Options.put("NameColor", nameColor);
 			Options.put("TextColor", textColor);
 			Options.put("IncludeMyMessage", includeMyMessage);
+			Options.put("MutePlayer", mutePlayer);
+			Options.put("MuteMessage", muteMessage);
+			Options.put("PlayerSpace", playerSpace);
 		}
 		catch (Exception e)
 		{
