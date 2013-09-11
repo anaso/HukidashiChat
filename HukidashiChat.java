@@ -134,6 +134,7 @@ public class HukidashiChat
 			String[] mutePlayer = propMutePlayer.getStringList();
 			String[] muteMessage = propMuteMessage.getStringList();
 			
+			boolean viewAllMessage = propViewAllMessage.getBoolean(false);
 			int playerSpace = propPlayerSpace.getInt();
 			
 			Options.put("DisplayTime", displayTime);
@@ -148,6 +149,7 @@ public class HukidashiChat
 			Options.put("IncludeMyMessage", includeMyMessage);
 			Options.put("MutePlayer", mutePlayer);
 			Options.put("MuteMessage", muteMessage);
+			Options.put("ViewAllMessage", Boolean.toString(viewAllMessage));
 			Options.put("PlayerSpace", playerSpace);
 		}
 		catch (Exception e)

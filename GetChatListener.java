@@ -1,8 +1,8 @@
 package anaso.HukidashiChat;
 
 import java.util.HashMap;
-
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetLoginHandler;
 import net.minecraft.network.packet.NetHandler;
@@ -13,7 +13,6 @@ import net.minecraft.src.ModLoader;
 import cpw.mods.fml.common.network.IChatListener;
 import cpw.mods.fml.common.network.IConnectionHandler;
 import cpw.mods.fml.common.network.Player;
-
 import com.google.gson.Gson;
 
 public class GetChatListener implements IChatListener, IConnectionHandler
@@ -40,8 +39,6 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 		}
 		
 		muteMessage = (String[])Options.get("MuteMessage");
-		
-		System.out.println("In" + muteMessage);
 		if(muteMessage != null)
 		{
 			enableMuteMessage = true;
@@ -55,7 +52,7 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 
 	@Override
 	public Packet3Chat clientChat(NetHandler handler, Packet3Chat message) {
-		System.out.println("GetChatMessage : " + message.message);
+		//System.out.println("GetChatMessage : " + message.message);
 		
 		messageClass = gson.fromJson(message.message, MessageClass.class);
 		
@@ -75,6 +72,7 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 					{
 						getMessage[0] = "";
 						getMessage[1] = "";
+						break;
 					}
 				}
 				
@@ -84,6 +82,7 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 					{
 						getMessage[0] = "";
 						getMessage[1] = "";
+						break;
 					}
 				}
 			}

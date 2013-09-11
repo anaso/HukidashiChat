@@ -3,6 +3,9 @@ package anaso.HukidashiChat;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.EnumSet;
+
+import javax.annotation.processing.RoundEnvironment;
+
 import org.apache.commons.lang3.text.translate.NumericEntityUnescaper.OPTION;
 import org.bouncycastle.util.Arrays;
 import org.lwjgl.opengl.GL11;
@@ -15,10 +18,12 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.src.ModLoader;
 import net.minecraft.util.EnumMovingObjectType;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.common.*;
 
@@ -29,6 +34,7 @@ public class HukidashiChatTick implements ITickHandler
 	private final EnumSet<TickType> tickSet = EnumSet.of(TickType.RENDER);
 
 	static String[] listenerString = {"",""};
+	static boolean listenerViewMessage = false;
 	
 	int[] suspendTime = {0, 0, 0, 0};
 	String[][] writingString;
@@ -53,7 +59,16 @@ public class HukidashiChatTick implements ITickHandler
 	int stringColumn = 4;
 	int stringWidth = 83;
 	
-	ResourceLocation resourceLocation;
+	int[] hukidashiScale = {10,30};
+	
+	ResourceLocation guiHukidashiMain;
+	ResourceLocation guiHukidashi;
+	
+	boolean enableAllMessage = false;
+	double playerSpaceOption;
+	
+	int gameSettingFov;
+	float fovPerWidth;
 	
 	public HukidashiChatTick(HashMap Options)
 	{
@@ -90,7 +105,12 @@ public class HukidashiChatTick implements ITickHandler
 		
 		//System.out.println(nameColor + " : " + textColor + " : " + tempNameColor[3] + " : " + tempTextColor[3]);
 		
-		resourceLocation = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
+		enableAllMessage = Boolean.parseBoolean((String)Options.get("ViewAllMessage"));
+		
+		playerSpaceOption = (double)(Integer)Options.get("PlayerSpace");
+		
+		guiHukidashiMain = new ResourceLocation("hukidashichat:textures/gui/hukidashi_gui.png");
+		guiHukidashi = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
 		
 		stringColumn++; // 配列の0が名前のため、1つ多くしておく
 		writingString = new String[4][stringColumn];
@@ -114,7 +134,7 @@ public class HukidashiChatTick implements ITickHandler
 		Minecraft MC = ModLoader.getMinecraftInstance();
 		
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha/255);
-		MC.func_110434_K().func_110577_a(resourceLocation);
+		MC.func_110434_K().func_110577_a(guiHukidashiMain);
 
 		Gui gui = new Gui();
 		gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
@@ -125,6 +145,42 @@ public class HukidashiChatTick implements ITickHandler
 			if(!writeString[i].equals(""))
 			{
 				MC.fontRenderer.drawString(writeString[i], guiPosition[suspendNumber][0] + textPosition[2], guiPosition[suspendNumber][1] + textPosition[3] + ((i-1) * MC.fontRenderer.FONT_HEIGHT), textColor, textShadow);
+			}
+		}
+		
+		if(!enableAllMessage && !writeString[0].equals(""))
+		{
+			try
+			{
+				EntityPlayer player = MC.theWorld.getPlayerEntityByName(writeString[0]);
+				
+				if(player.worldObj.getWorldInfo().getWorldName().equals(MC.thePlayer.worldObj.getWorldInfo().getWorldName()) && player.dimension == MC.thePlayer.dimension)
+				{
+					double playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - player.posX, 2) + Math.pow(MC.thePlayer.posY - player.posY, 2) + Math.pow(MC.thePlayer.posZ - player.posZ, 2));
+					
+					if(playerSpaceOption > playerSpace)
+					{
+						//System.out.println("in hukidashi");
+						
+						GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha/255);
+						MC.func_110434_K().func_110577_a(guiHukidashi);
+						gui.drawTexturedModalRect(guiPosition[suspendNumber][0] + textureSize[0] - 50, guiPosition[suspendNumber][1] + textureSize[1] - 50, 0, 0, 80, 80);
+						
+						//        N x:0 z:-1
+						// W x:-1 z:0      E x:1 z:0
+						//        S x:0 z:1
+						//      Up y:1  Down y:-1
+						
+						if(checkHukidashiView(MC))
+						{
+							
+						}
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				System.out.println(e);
 			}
 		}
 		
@@ -197,6 +253,10 @@ public class HukidashiChatTick implements ITickHandler
 					}
 				}
 				
+				gameSettingFov = 70 + (int)(MC.gameSettings.fovSetting * 40);
+				fovPerWidth = (gameSettingFov * 2) / MC.displayWidth;
+				// 横1ピクセルあたりの角度
+				
 				for(int i = 0; i < 4; i++)
 				{
 					if(suspendTime[i] > 0)
@@ -208,6 +268,48 @@ public class HukidashiChatTick implements ITickHandler
 		}
 	}
 
+	private boolean checkHukidashiView(Minecraft MC)
+	{
+		// 画面内に相手プレイヤーがいるかの確認
+		
+		float viewYaw = MathHelper.wrapAngleTo180_float(MC.thePlayer.rotationYaw);
+		
+		boolean returnBoolean = false;
+		
+		if(viewYaw < 0)
+		{
+			viewYaw += 180;
+		}
+		else if(viewYaw > 0)
+		{
+			viewYaw -= 180;
+		}
+		
+		float playerSpaceYaw = (float) (-Math.atan2(MC.thePlayer.posX, MC.thePlayer.posZ) / Math.PI * 180);
+		System.out.println(viewYaw + " : " + MathHelper.wrapAngleTo180_float(MC.thePlayer.rotationPitch));
+		System.out.println(playerSpaceYaw + " : " + Math.atan2(-MC.thePlayer.posY, -MC.thePlayer.posX) / Math.PI * 180);
+		
+		if (viewYaw < playerSpaceYaw + gameSettingFov && viewYaw > playerSpaceYaw - gameSettingFov)
+		{
+			returnBoolean = true;
+		}
+		else if(180 < playerSpaceYaw + gameSettingFov && (playerSpaceYaw + gameSettingFov) > viewYaw + 360)
+		{
+			returnBoolean = true;
+		}
+		else if(-180 > playerSpaceYaw - gameSettingFov && (playerSpaceYaw - gameSettingFov) < viewYaw - 360)
+		{
+			returnBoolean = true;
+		}
+		
+		if(returnBoolean)
+		{
+			System.out.println("in");
+		}
+		
+		return returnBoolean;
+	}
+	
 	@Override
 	public EnumSet<TickType> ticks()
 	{
