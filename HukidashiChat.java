@@ -61,6 +61,8 @@ public class HukidashiChat
 		{
 			cfg.load();
 			Property propDisplayTime  = cfg.get(cfg.CATEGORY_GENERAL, "Display Time", 200, "Value is Tick (1[Tick] = 1/20[Second])");
+			Property propFadeInTime = cfg.get(cfg.CATEGORY_GENERAL, "Fade-in Time", 0, "Value is Tick (1[Tick] = 1/20[Second])");
+			Property propFadeOutTime = cfg.get(cfg.CATEGORY_GENERAL, "Fade-out Time", 20, "Value is Tick (1[Tick] = 1/20[Second])");
 			Property propAlpha = cfg.get(cfg.CATEGORY_GENERAL, "Gui Alpha", 200, "Min = 0, Max = 255");
 			
 			Property propGuiPos1X = cfg.get(guiPos, "Gui Pos 1 X", 20, "Minus Value is count LowerRight");
@@ -78,6 +80,11 @@ public class HukidashiChat
 			
 			Property propTextureSizeX = cfg.get(cfg.CATEGORY_GENERAL, "Gui Texture Size X", 100);
 			Property propTextureSizeY = cfg.get(cfg.CATEGORY_GENERAL, "Gui Texture Size Y", 55);
+			
+			Property propHukidashiSizeX = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi Texture Size X", 50);
+			Property propHukidashiSizeY = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi Texture Size Y", 9);
+			Property propHukidashiRotationX = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi Rotation X", 4);
+			Property propHukidashiRotationY = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi Rotation Y", 4);
 			
 			Property propNamePosX = cfg.get(guiPos, "Player Name Pos X", 9);
 			Property propNamePosY = cfg.get(guiPos, "Player Name Pos Y", 5);
@@ -100,11 +107,12 @@ public class HukidashiChat
 			Property propMuteMessage = cfg.get(cfg.CATEGORY_GENERAL, "Mute Message", empty);
 			
 			Property propViewAllMessage = cfg.get(cfg.CATEGORY_GENERAL, "View All Message", false);
+			Property propViewHukidashi = cfg.get(cfg.CATEGORY_GENERAL, "View Hukidashi", true);
 			Property propPlayerSpace = cfg.get(cfg.CATEGORY_GENERAL, "Player Space", 75);
 
 
 
-			int displayTime = propDisplayTime.getInt();
+			int[] displayTime = {propFadeInTime.getInt(), propDisplayTime.getInt(), propFadeOutTime.getInt()};
 			int alpha = propAlpha.getInt();
 			
 			int guiPos1X = propGuiPos1X.getInt();
@@ -122,6 +130,9 @@ public class HukidashiChat
 			
 			int[] textureSize = {propTextureSizeX.getInt(),propTextureSizeY.getInt()};
 			
+			int[] hukidashiSize = {propHukidashiSizeX.getInt(),propHukidashiSizeY.getInt()};
+			int[] hukidashiRotation = {propHukidashiRotationX.getInt(),propHukidashiRotationY.getInt()};
+			
 			int[] textPos = {propNamePosX.getInt(), propNamePosY.getInt(), propTextPosX.getInt(), propTextPosY.getInt()};
 			// 名前X 名前Y 本文X 本文Y
 			
@@ -135,6 +146,7 @@ public class HukidashiChat
 			String[] muteMessage = propMuteMessage.getStringList();
 			
 			boolean viewAllMessage = propViewAllMessage.getBoolean(false);
+			boolean viewHukidashi = propViewHukidashi.getBoolean(true);
 			int playerSpace = propPlayerSpace.getInt();
 			
 			Options.put("DisplayTime", displayTime);
@@ -143,6 +155,8 @@ public class HukidashiChat
 			Options.put("StringColumn", stringColumn);
 			Options.put("StringWidth", stringWidth);
 			Options.put("TextureSize", textureSize);
+			Options.put("HukidashiSize", hukidashiSize);
+			Options.put("HukidashiRotation", hukidashiRotation);
 			Options.put("TextPosition", textPos);
 			Options.put("NameColor", nameColor);
 			Options.put("TextColor", textColor);
@@ -150,6 +164,7 @@ public class HukidashiChat
 			Options.put("MutePlayer", mutePlayer);
 			Options.put("MuteMessage", muteMessage);
 			Options.put("ViewAllMessage", Boolean.toString(viewAllMessage));
+			Options.put("ViewHukidashi", Boolean.toString(viewHukidashi));
 			Options.put("PlayerSpace", playerSpace);
 		}
 		catch (Exception e)
