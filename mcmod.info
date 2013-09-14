@@ -1,0 +1,14 @@
+[
+{
+  "modid": "anaso.HukidashiChat",
+  "name": "HukidashiChat",
+  "description": "Hukidashi Chat !",
+  "url": "http://forum.minecraftuser.jp/viewtopic.php?f=13&t=6202",
+  "version": "1.6.2",
+  "credits": "By anaso",
+  "authors": ["anaso"],
+  "requiredMods": [],
+  "dependencies": [],
+  "dependants": [],
+}
+]
