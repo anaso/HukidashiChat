@@ -4,11 +4,15 @@
   "name": "HukidashiChat",
   "description": "Hukidashi Chat !",
   "url": "http://forum.minecraftuser.jp/viewtopic.php?f=13&t=6202",
-  "version": "1.6.2",
+  "updateUrl": "",
+  "logoFile": "",
+  "version": "1.6",
   "credits": "By anaso",
+  "parent": "",
   "authors": ["anaso"],
   "requiredMods": [],
   "dependencies": [],
   "dependants": [],
+  "useDependencyInformation": "false"
 }
 ]
