@@ -86,6 +86,9 @@ public class HukidashiChat
 			Property propHukidashiRotationX = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi Rotation X", 4);
 			Property propHukidashiRotationY = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi Rotation Y", 4);
 			
+			Property propHukidashiInGuiX = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi in Gui X", 3);
+			Property propHukidashiInGuiY = cfg.get(cfg.CATEGORY_GENERAL, "Hukidashi in Gui Y", 3);
+			
 			Property propNamePosX = cfg.get(guiPos, "Player Name Pos X", 9);
 			Property propNamePosY = cfg.get(guiPos, "Player Name Pos Y", 5);
 			Property propTextPosX = cfg.get(guiPos, "Chat Text Pos X", 10);
@@ -133,6 +136,8 @@ public class HukidashiChat
 			int[] hukidashiSize = {propHukidashiSizeX.getInt(),propHukidashiSizeY.getInt()};
 			int[] hukidashiRotation = {propHukidashiRotationX.getInt(),propHukidashiRotationY.getInt()};
 			
+			int[] hukidashiInGui = {propHukidashiInGuiX.getInt(),propHukidashiInGuiY.getInt()};
+			
 			int[] textPos = {propNamePosX.getInt(), propNamePosY.getInt(), propTextPosX.getInt(), propTextPosY.getInt()};
 			// 名前X 名前Y 本文X 本文Y
 			
@@ -157,6 +162,7 @@ public class HukidashiChat
 			Options.put("TextureSize", textureSize);
 			Options.put("HukidashiSize", hukidashiSize);
 			Options.put("HukidashiRotation", hukidashiRotation);
+			Options.put("HukidashiInGui", hukidashiInGui);
 			Options.put("TextPosition", textPos);
 			Options.put("NameColor", nameColor);
 			Options.put("TextColor", textColor);
