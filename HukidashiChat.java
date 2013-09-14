@@ -34,7 +34,7 @@ import net.minecraft.util.ResourceLocation;
 
 @Mod
 (
-	modid = "anaso.HukidashiChat",
+	modid = "HukidashiChat",
 	name = "Hukidashi Chat",
 	version = "1.6"
 )

@@ -63,30 +63,30 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 			//HukidashiChatTick.listenerString = getMessage(MC);
 			
 			String[] getMessage = getMessage(MC);
-			
 			if(enableMutePlayer || enableMuteMessage)
 			{
 				for(String mutePlayerString:mutePlayer)
 				{
-					if(getMessage[0].equals(mutePlayerString))
+					if(getMessage[0].equals(mutePlayerString) && !mutePlayerString.equals(""))
 					{
 						getMessage[0] = "";
 						getMessage[1] = "";
+						System.out.println("MutePlayer!");
 						break;
 					}
 				}
 				
 				for(String muteMessageString:muteMessage)
 				{
-					if(getMessage[1].indexOf(muteMessageString) > -1)
+					if(getMessage[1].indexOf(muteMessageString) > -1 && !muteMessageString.equals(""))
 					{
 						getMessage[0] = "";
 						getMessage[1] = "";
+						System.out.println("MuteMessage! :" + muteMessageString + "[END]");
 						break;
 					}
 				}
 			}
-			
 			HukidashiChatTick.listenerString = getMessage;
 		}
 		
@@ -155,7 +155,7 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 					tempReturn = messageClass.getUsing();
 				}
 				
-				System.out.println(MC.theWorld.getPlayerEntityByName(messageClass.getUsing()[0]));
+				//System.out.println(MC.theWorld.getPlayerEntityByName(messageClass.getUsing()[0]));
 			}
 			catch(Exception e)  //エラー吐いたら無かったことに
 			{

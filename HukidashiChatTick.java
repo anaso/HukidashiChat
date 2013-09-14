@@ -168,13 +168,14 @@ public class HukidashiChatTick implements ITickHandler
 			}
 		}
 		
-		if(!enableAllMessage && !writeString[0].equals("") && viewHukidashi)
+		if(!writeString[0].equals("") && viewHukidashi)
 		{
 			try
 			{
 				// 吹き出しの表示処理開始
 				EntityPlayer player = MC.theWorld.getPlayerEntityByName(writeString[0]);
 				
+				System.out.println(player.worldObj.getWorldInfo().getWorldName() + " : Dim " + player.dimension);
 				if(player.worldObj.getWorldInfo().getWorldName().equals(MC.thePlayer.worldObj.getWorldInfo().getWorldName()) && player.dimension == MC.thePlayer.dimension)
 				{
 					double playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - player.posX, 2) + Math.pow(MC.thePlayer.posY - player.posY, 2) + Math.pow(MC.thePlayer.posZ - player.posZ, 2));
@@ -251,6 +252,7 @@ public class HukidashiChatTick implements ITickHandler
 							listenerString[0] = "";
 							listenerString[1] = "";
 							suspendTime[i] = displayTime[0] + displayTime[1] + displayTime[2];
+							
 							ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
 							// GUIスケールに合わせて調整
 							
@@ -293,6 +295,7 @@ public class HukidashiChatTick implements ITickHandler
 				
 				for(int i = 0; i < 4; i++)
 				{
+					//System.out.println(suspendTime[i]);
 					if(suspendTime[i] > 0)
 					{
 						int[][] tempPoint = {
