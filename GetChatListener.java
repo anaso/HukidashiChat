@@ -1,6 +1,9 @@
 package anaso.HukidashiChat;
 
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.INetworkManager;
@@ -27,7 +30,8 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 	boolean enableMutePlayer = false, enableMuteMessage = false;
 	boolean replaceCC = true;
 
-	String ColorCodePattern = "§[0-9a-fA-F]";
+	String ColorCodeString = "§[0-9a-fA-F]";
+	Pattern ColorCodePattern = Pattern.compile(ColorCodeString);
 
 	HashMap Options;
 
@@ -95,9 +99,12 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 
 			if(replaceCC)
 			{
-				getMessage[0].replaceAll(ColorCodePattern, "");
-				getMessage[1].replaceAll(ColorCodePattern, "");
-				System.out.println("Raplace");
+				System.out.println(getMessage[1]);
+				Matcher matcher = ColorCodePattern.matcher(getMessage[0]);
+				getMessage[0] = matcher.replaceAll("");
+				matcher = ColorCodePattern.matcher(getMessage[1]);
+				getMessage[1] = matcher.replaceAll("");
+				System.out.println("Raplace : " + getMessage[1]);
 			}
 
 			HukidashiChatTick.listenerString = getMessage;
