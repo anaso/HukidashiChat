@@ -99,12 +99,10 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 
 			if(replaceCC)
 			{
-				System.out.println(getMessage[1]);
 				Matcher matcher = ColorCodePattern.matcher(getMessage[0]);
 				getMessage[0] = matcher.replaceAll("");
 				matcher = ColorCodePattern.matcher(getMessage[1]);
 				getMessage[1] = matcher.replaceAll("");
-				System.out.println("Raplace : " + getMessage[1]);
 			}
 
 			HukidashiChatTick.listenerString = getMessage;
