@@ -158,7 +158,7 @@ public class HukidashiChatTick implements ITickHandler
 		if(enableAllMessage || playerSpace < playerSpaceOption)  // 全てのメッセージを表示する、もしくは描画距離以内だったとき
 		{
 			GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
-			MC.func_110434_K().func_110577_a(guiHukidashiMain);
+			MC.getTextureManager().bindTexture(guiHukidashiMain);
 
 			Gui gui = new Gui();
 			gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
@@ -204,7 +204,7 @@ public class HukidashiChatTick implements ITickHandler
 								//MC.fontRenderer.drawString("o", ((int)((SR.getScaledWidth() / 2) + (hukidashiPixels[1] / SRMagnification))), ((int)((SR.getScaledHeight() / 2) + (hukidashiPixels[2] / SRMagnification))), 16777215);
 
 								GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
-								MC.func_110434_K().func_110577_a(guiHukidashi);
+								MC.getTextureManager().bindTexture(guiHukidashi);
 
 								GL11.glTranslatef(nearCenterPoint[suspendNumber][0], nearCenterPoint[suspendNumber][1], 0);
 								GL11.glRotatef((float) (Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
