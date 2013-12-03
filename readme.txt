@@ -20,8 +20,9 @@ Gui Alpha -> 吹き出しの透明度です。値は0-255の範囲で、0で見�
 Mute Message -> 吹き出しにしない言葉を設定します。改行して区切ってください。また、デフォルトのチャット蘭には表示されます。
 Mute Player -> 表示しないプレイヤーを設定します。区切りは改行で
 Include My Message -> 自分の発言を表示するかの設定です。 true=表示する
-View All Message -> 距離やディメンジョンにかかわらず表示します。true=表示する（未実装説 濃厚）
-View Hukidashi -> 吹き出しを表示するかしないかです。処理がごちゃごちゃなので重いと思ったらオフにしてください。 true=表示する
+View All Message -> 距離やディメンジョンにかかわらず表示します。true=表示する
+View Hukidashi -> 吹き出しを表示するかしないかです。処理がごちゃごちゃなので重いと思ったらfalseでオフにしてください。 true=表示する
+Player Space -> View All Messageがオフのときや、吹き出しを表示するまでの、自分と相手との距離です。
 
  -吹き出しのテクスチャを変更した際に設定する内容-
 Gui Texture Size -> 表示するテクスチャ（hukidashi_gui.png）のサイズを入力してください。
