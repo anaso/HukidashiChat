@@ -147,75 +147,89 @@ public class HukidashiChatTick implements ITickHandler
 	{
 		Minecraft MC = ModLoader.getMinecraftInstance();
 
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
-		MC.func_110434_K().func_110577_a(guiHukidashiMain);
-
-		Gui gui = new Gui();
-		gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
-
-		int fadeAlpha = (int)(alpha * alphaFloat);
-
-		int tempNameColor = ((nameColorSplit[0] & 255) << 16) + ((nameColorSplit[1] & 255) << 8) + (nameColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
-		int tempTextColor = ((textColorSplit[0] & 255) << 16) + ((textColorSplit[1] & 255) << 8) + (textColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
-		// フェードイン、フェードアウト用
-
-		MC.fontRenderer.drawString(writeString[0], guiPosition[suspendNumber][0] + textPosition[0], guiPosition[suspendNumber][1] + textPosition[1], tempNameColor, nameShadow);
-		for(int i = 1; i < stringColumn; i++)
+		// プレイヤー間の距離
+		EntityPlayer player = MC.theWorld.getPlayerEntityByName(writeString[0]);
+		double playerSpace = Double.MAX_VALUE;
+		if(player != null)
 		{
-			if(!writeString[i].equals(""))
-			{
-				MC.fontRenderer.drawString(writeString[i], guiPosition[suspendNumber][0] + textPosition[2], guiPosition[suspendNumber][1] + textPosition[3] + ((i-1) * MC.fontRenderer.FONT_HEIGHT), tempTextColor, textShadow);
-			}
+			playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - player.posX, 2) + Math.pow(MC.thePlayer.posY - player.posY, 2) + Math.pow(MC.thePlayer.posZ - player.posZ, 2));
 		}
 
-		if(!writeString[0].equals("") && viewHukidashi)
+		if(enableAllMessage || playerSpace < playerSpaceOption)  // 全てのメッセージを表示する、もしくは描画距離以内だったとき
 		{
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
+			MC.func_110434_K().func_110577_a(guiHukidashiMain);
+
+			Gui gui = new Gui();
+			gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
+
+			int fadeAlpha = (int)(alpha * alphaFloat);
+
+			int tempNameColor = ((nameColorSplit[0] & 255) << 16) + ((nameColorSplit[1] & 255) << 8) + (nameColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
+			int tempTextColor = ((textColorSplit[0] & 255) << 16) + ((textColorSplit[1] & 255) << 8) + (textColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
+			// フェードイン、フェードアウト用
+
+			MC.fontRenderer.drawString(writeString[0], guiPosition[suspendNumber][0] + textPosition[0], guiPosition[suspendNumber][1] + textPosition[1], tempNameColor, nameShadow);
+			for(int i = 1; i < stringColumn; i++)
+			{
+				if(!writeString[i].equals(""))
+				{
+					MC.fontRenderer.drawString(writeString[i], guiPosition[suspendNumber][0] + textPosition[2], guiPosition[suspendNumber][1] + textPosition[3] + ((i-1) * MC.fontRenderer.FONT_HEIGHT), tempTextColor, textShadow);
+				}
+			}
+
 			try
 			{
-				// 吹き出しの表示処理開始
-				EntityPlayer player = MC.theWorld.getPlayerEntityByName(writeString[0]);
 
-				//System.out.println(player.worldObj.getWorldInfo().getWorldName() + " : Dim " + player.dimension);
-
-				if(player.worldObj.getWorldInfo().getWorldName().equals(MC.thePlayer.worldObj.getWorldInfo().getWorldName()) && player.dimension == MC.thePlayer.dimension)
+				if(!writeString[0].equals("") && viewHukidashi)
 				{
-					double playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - player.posX, 2) + Math.pow(MC.thePlayer.posY - player.posY, 2) + Math.pow(MC.thePlayer.posZ - player.posZ, 2));
+					// 吹き出しの表示処理開始
 
-					if(playerSpaceOption > playerSpace)
+					//System.out.println(player.worldObj.getWorldInfo().getWorldName() + " : Dim " + player.dimension);
+
+					if(player.worldObj.getWorldInfo().getWorldName().equals(MC.thePlayer.worldObj.getWorldInfo().getWorldName()) && player.dimension == MC.thePlayer.dimension)
 					{
-						//System.out.println("in hukidashi");
-						int[] hukidashiPixels = checkHukidashiView(MC, player, playerSpace);
 
-						if(hukidashiPixels[0] == 1)
+						if(playerSpaceOption > playerSpace)
 						{
-							// 吹き出しの表示
+							//System.out.println("in hukidashi");
+							int[] hukidashiPixels = checkHukidashiView(MC, player, playerSpace);
 
-							ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
-							float SRMagnification = MC.displayHeight / SR.getScaledHeight();
-							//MC.fontRenderer.drawString("o", ((int)((SR.getScaledWidth() / 2) + (hukidashiPixels[1] / SRMagnification))), ((int)((SR.getScaledHeight() / 2) + (hukidashiPixels[2] / SRMagnification))), 16777215);
+							if(hukidashiPixels[0] == 1)
+							{
+								// 吹き出しの表示
 
-							GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
-							MC.func_110434_K().func_110577_a(guiHukidashi);
+								ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
+								float SRMagnification = MC.displayHeight / SR.getScaledHeight();
+								//MC.fontRenderer.drawString("o", ((int)((SR.getScaledWidth() / 2) + (hukidashiPixels[1] / SRMagnification))), ((int)((SR.getScaledHeight() / 2) + (hukidashiPixels[2] / SRMagnification))), 16777215);
 
-							GL11.glTranslatef(nearCenterPoint[suspendNumber][0], nearCenterPoint[suspendNumber][1], 0);
-							GL11.glRotatef((float) (Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
-							GL11.glTranslatef(-hukidashiRotation[0], -hukidashiRotation[1], 0);
-							// GUI位置の調整
+								GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
+								MC.func_110434_K().func_110577_a(guiHukidashi);
 
-							gui.drawTexturedModalRect(0, 0, 0, 0, hukidashiSize[0], hukidashiSize[1]);
-							// 吹き出しの描画
+								GL11.glTranslatef(nearCenterPoint[suspendNumber][0], nearCenterPoint[suspendNumber][1], 0);
+								GL11.glRotatef((float) (Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
+								GL11.glTranslatef(-hukidashiRotation[0], -hukidashiRotation[1], 0);
+								// GUI位置の調整
 
-							GL11.glTranslatef(hukidashiRotation[0], hukidashiRotation[1], 0);
-							GL11.glRotatef((float) -(Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
-							GL11.glTranslatef(-nearCenterPoint[suspendNumber][0], -nearCenterPoint[suspendNumber][1], 0);
-							// GUI位置を元に戻す
+								gui.drawTexturedModalRect(0, 0, 0, 0, hukidashiSize[0], hukidashiSize[1]);
+								// 吹き出しの描画
+
+								GL11.glTranslatef(hukidashiRotation[0], hukidashiRotation[1], 0);
+								GL11.glRotatef((float) -(Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
+								GL11.glTranslatef(-nearCenterPoint[suspendNumber][0], -nearCenterPoint[suspendNumber][1], 0);
+								// GUI位置を元に戻す
+							}
 						}
 					}
 				}
 			}
+
 			catch (Exception e)
 			{
-				//System.out.println(e);
+				if(suspendTime[suspendNumber] % 20 == 0)
+				{
+					System.out.println(e);
+				}
 			}
 		}
 
