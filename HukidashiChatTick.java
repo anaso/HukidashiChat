@@ -418,6 +418,8 @@ public class HukidashiChatTick implements ITickHandler
 		return returnInt;
 	}
 
+
+	
 	@Override
 	public EnumSet<TickType> ticks()
 	{
