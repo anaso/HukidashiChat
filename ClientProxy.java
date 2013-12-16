@@ -11,8 +11,10 @@ import net.minecraft.src.*;
 public class ClientProxy extends CommonProxy
 {
 	@Override
-	public void RegisterTicking(HashMap Options)
+	public void RegisterTicking(HashMap Options, GetChatListener getChatListener)
 	{
-		TickRegistry.registerTickHandler(new HukidashiChatTick(Options), Side.CLIENT);
+		HukidashiChatTick hukidashiChatTick = new HukidashiChatTick(Options, getChatListener);
+		TickRegistry.registerTickHandler(hukidashiChatTick, Side.CLIENT);
+		new HukidashiAPI(hukidashiChatTick);
 	}
 }

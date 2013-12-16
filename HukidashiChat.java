@@ -53,6 +53,8 @@ public class HukidashiChat
 
 	String[] empty = {""};
 
+	GetChatListener getChatListener;
+
 	@EventHandler
 	public void PreInit(FMLPreInitializationEvent event)
 	{
@@ -189,12 +191,13 @@ public class HukidashiChat
 	@EventHandler
 	public void Init(FMLInitializationEvent event)
 	{
-		proxy.RegisterTicking(Options);
+		getChatListener = new GetChatListener(Options);
+		proxy.RegisterTicking(Options, getChatListener);
 	}
 
 	@EventHandler
 	public void PostInit(FMLPostInitializationEvent event)
 	{
-		NetworkRegistry.instance().registerChatListener(new GetChatListener(Options));
+		NetworkRegistry.instance().registerChatListener(getChatListener);
 	}
 }

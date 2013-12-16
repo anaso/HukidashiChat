@@ -12,6 +12,7 @@ import org.bouncycastle.util.Arrays;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL11.*;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
@@ -34,8 +35,8 @@ public class HukidashiChatTick implements ITickHandler
 
 	private final EnumSet<TickType> tickSet = EnumSet.of(TickType.RENDER);
 
-	static String[] listenerString = {"",""};  // リスナーから受け取る文字列
-	//static boolean listenerViewMessage = false;  //
+	String[] listenerString = {"",""};  // リスナーから受け取る文字列
+	String[] bufferedString = {"",""};  // APIからの文字列のバッファ
 
 	int[] suspendTime = {0, 0, 0, 0};  // 表示時間の保持
 	String[][] writingString;  // 表示するメッセージの保持  [メッセージの番号][0名前 1テキスト]
@@ -77,7 +78,15 @@ public class HukidashiChatTick implements ITickHandler
 	int gameSettingFov;
 	float widthPerFov;  // 画面1ピクセルあたりの視野角
 
-	public HukidashiChatTick(HashMap Options)
+	GetChatListener getChatListener;
+
+	public HukidashiChatTick(HashMap Options, GetChatListener getChatListener)
+	{
+		constructorMethod(Options);
+		this.getChatListener = getChatListener;
+	}
+
+	public void constructorMethod(HashMap Options)
 	{
 		this.Options = Options;
 
@@ -241,6 +250,7 @@ public class HukidashiChatTick implements ITickHandler
 		suspendTime[suspendNumber]--;
 	}
 
+	// 文字列を取得して描画関数を呼び出す
 	@Override
 	public void tickEnd(EnumSet<TickType> type, Object... tickData)
 	{
@@ -250,6 +260,10 @@ public class HukidashiChatTick implements ITickHandler
 		{
 			if(MC.currentScreen == null)
 			{
+				listenerString = getChatListener.getListenerString();
+				String[] resetStrings = {"",""};
+				getChatListener.setListenerString(resetStrings);
+
 				if(!listenerString[0].equals(""))
 				{
 
@@ -364,7 +378,7 @@ public class HukidashiChatTick implements ITickHandler
 
 		float viewYaw = MathHelper.wrapAngleTo180_float(MC.thePlayer.rotationYaw);
 		int widthPixel = 0, heightPixel = 0;
-		// 右+ : 上+
+		// 右が+、上も+
 
 		tempPlayerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - tempPlayer.posX, 2) + Math.pow(MC.thePlayer.posY - tempPlayer.posY, 2) + Math.pow(MC.thePlayer.posZ - tempPlayer.posZ, 2));
 		// プレイヤー間の距離の測定
@@ -382,11 +396,6 @@ public class HukidashiChatTick implements ITickHandler
 
 		float playerSpaceYaw = (float)(-Math.atan2(MC.thePlayer.posX - tempPlayer.posX, MC.thePlayer.posZ - tempPlayer.posZ) / Math.PI * 180);
 		float playerSpacePitch = (float)(Math.asin((MC.thePlayer.posY - tempPlayer.posY - 1) / tempPlayerSpace) / Math.PI * 180);
-
-
-		//System.out.println(MC.thePlayer.rotationPitch + " : " + playerSpacePitch + " : " + (MC.thePlayer.rotationPitch - playerSpacePitch) * widthPerFov);
-
-		//System.out.println((playerSpacePitch - (widthPerFov * MC.displayHeight)) + " : " + MC.thePlayer.rotationPitch + " : " + (playerSpacePitch + (widthPerFov * MC.displayHeight)));
 
 		if(tempPlayerSpace < playerSpaceOption && tempPlayerSpace > 1)
 		{
@@ -413,13 +422,23 @@ public class HukidashiChatTick implements ITickHandler
 		}
 
 		int[] returnInt = {BooleanUtils.toInteger(returnBoolean), widthPixel, heightPixel};
-		//int[] returnInt = {BooleanUtils.toInteger(returnBoolean), 0, 0};
 
 		return returnInt;
 	}
 
+	void bufferedHukidashi(String[] setStrings)
+	{
+		bufferedString = setStrings;
+	}
 
-	
+	String[] getBufferString()
+	{
+		String[] temp = bufferedString;
+		bufferedString[0] = "";
+		bufferedString[1] = "";
+		return temp;
+	}
+
 	@Override
 	public EnumSet<TickType> ticks()
 	{

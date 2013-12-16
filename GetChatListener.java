@@ -33,6 +33,8 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 	String ColorCodeString = "§[0-9a-fA-F]";
 	Pattern ColorCodePattern = Pattern.compile(ColorCodeString);
 
+	String[] listenerString = {"",""};
+
 	HashMap Options;
 
 	GetChatListener(HashMap Options)
@@ -59,18 +61,18 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 		return message;
 	}
 
+	// チャットを受け取るクライアントリスナ
 	@Override
-	public Packet3Chat clientChat(NetHandler handler, Packet3Chat message) {
-		//System.out.println("GetChatMessage : " + message.message);
-
+	public Packet3Chat clientChat(NetHandler handler, Packet3Chat message)
+	{
+		// gsonで解析
 		messageClass = gson.fromJson(message.message, MessageClass.class);
 
 		if(messageClass != null)
 		{
 			Minecraft MC = ModLoader.getMinecraftInstance();
 
-			//HukidashiChatTick.listenerString = getMessage(MC);
-
+			// ミュート処理
 			String[] getMessage = getMessage(MC);
 			if(enableMutePlayer || enableMuteMessage)
 			{
@@ -97,6 +99,7 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 				}
 			}
 
+			// カラーコードを削除
 			if(replaceCC)
 			{
 				Matcher matcher = ColorCodePattern.matcher(getMessage[0]);
@@ -105,7 +108,7 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 				getMessage[1] = matcher.replaceAll("");
 			}
 
-			HukidashiChatTick.listenerString = getMessage;
+			listenerString = getMessage;
 		}
 
 		return message;
@@ -114,40 +117,34 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 	@Override
 	public void playerLoggedIn(Player player, NetHandler netHandler,
 			INetworkManager manager) {
-		// TODO 自動生成されたメソッド・スタブ
 
 	}
 
 	@Override
 	public String connectionReceived(NetLoginHandler netHandler,
 			INetworkManager manager) {
-		// TODO 自動生成されたメソッド・スタブ
 		return null;
 	}
 
 	@Override
 	public void connectionOpened(NetHandler netClientHandler, String server,
 			int port, INetworkManager manager) {
-		// TODO 自動生成されたメソッド・スタブ
 
 	}
 
 	@Override
 	public void connectionOpened(NetHandler netClientHandler,
 			MinecraftServer server, INetworkManager manager) {
-		// TODO 自動生成されたメソッド・スタブ
 
 	}
 
 	@Override
 	public void connectionClosed(INetworkManager manager) {
-		// TODO 自動生成されたメソッド・スタブ
 
 	}
 
 	@Override
 	public void clientLoggedIn(NetHandler clientHandler, INetworkManager manager, Packet1Login login) {
-		// TODO 自動生成されたメソッド・スタブ
 
 	}
 
@@ -161,9 +158,6 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 			// 公式サーバー用
 			try
 			{
-				//System.out.println("Get : " + Boolean.parseBoolean((String)Options.get("IncludeMyMessage")));
-
-
 				if(!MC.thePlayer.username.equals(messageClass.getUsing()[0]))
 				{
 					tempReturn = messageClass.getUsing();
@@ -172,8 +166,6 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 				{
 					tempReturn = messageClass.getUsing();
 				}
-
-				//System.out.println(MC.theWorld.getPlayerEntityByName(messageClass.getUsing()[0]));
 			}
 			catch(Exception e)  //エラー吐いたら無かったことに
 			{
@@ -192,8 +184,6 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 				int start = -1, end = -1;
 				start = messageClass.getText().indexOf("\u003c");
 				end = messageClass.getText().indexOf("\u003e");
-
-				//System.out.println("in  " + start + " : " + end);
 
 				if(start >= 0 && end >= 0 && start < end)
 				{
@@ -219,5 +209,15 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 		}
 
 		return tempReturn;
+	}
+
+	String[] getListenerString()
+	{
+		return listenerString;
+	}
+
+	void setListenerString(String[] setter)
+	{
+		listenerString = setter;
 	}
 }
