@@ -16,4 +16,9 @@ public class HukidashiAPI
 		String[] sendStrings = {nameString, chatString};
 		hukidashiChatTick.bufferedHukidashi(sendStrings);
 	}
+
+	static public void setHukidashi(String nameString, String cString, int blockX, int blockY, int blockZ)
+	{
+
+	}
 }

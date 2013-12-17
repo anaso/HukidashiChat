@@ -152,7 +152,7 @@ public class HukidashiChatTick implements ITickHandler
 
 	}
 
-	public void renderHukidashiChat(String[] writeString, int suspendNumber, float alphaFloat)
+	public void renderHukidashiMainGUI(String[] writeString, int suspendNumber, float alphaFloat)
 	{
 		Minecraft MC = ModLoader.getMinecraftInstance();
 
@@ -166,18 +166,19 @@ public class HukidashiChatTick implements ITickHandler
 
 		if(enableAllMessage || playerSpace < playerSpaceOption)  // 全てのメッセージを表示する、もしくは描画距離以内だったとき
 		{
+			// テクスチャの設定、表示
 			GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
 			MC.getTextureManager().bindTexture(guiHukidashiMain);
-
 			Gui gui = new Gui();
 			gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
 
 			int fadeAlpha = (int)(alpha * alphaFloat);
 
+			// フェードイン、フェードアウト用
 			int tempNameColor = ((nameColorSplit[0] & 255) << 16) + ((nameColorSplit[1] & 255) << 8) + (nameColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
 			int tempTextColor = ((textColorSplit[0] & 255) << 16) + ((textColorSplit[1] & 255) << 8) + (textColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
-			// フェードイン、フェードアウト用
 
+			// チャット内容の描画
 			MC.fontRenderer.drawString(writeString[0], guiPosition[suspendNumber][0] + textPosition[0], guiPosition[suspendNumber][1] + textPosition[1], tempNameColor, nameShadow);
 			for(int i = 1; i < stringColumn; i++)
 			{
@@ -207,26 +208,7 @@ public class HukidashiChatTick implements ITickHandler
 							if(hukidashiPixels[0] == 1)
 							{
 								// 吹き出しの表示
-
-								ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
-								float SRMagnification = MC.displayHeight / SR.getScaledHeight();
-								//MC.fontRenderer.drawString("o", ((int)((SR.getScaledWidth() / 2) + (hukidashiPixels[1] / SRMagnification))), ((int)((SR.getScaledHeight() / 2) + (hukidashiPixels[2] / SRMagnification))), 16777215);
-
-								GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
-								MC.getTextureManager().bindTexture(guiHukidashi);
-
-								GL11.glTranslatef(nearCenterPoint[suspendNumber][0], nearCenterPoint[suspendNumber][1], 0);
-								GL11.glRotatef((float) (Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
-								GL11.glTranslatef(-hukidashiRotation[0], -hukidashiRotation[1], 0);
-								// GUI位置の調整
-
-								gui.drawTexturedModalRect(0, 0, 0, 0, hukidashiSize[0], hukidashiSize[1]);
-								// 吹き出しの描画
-
-								GL11.glTranslatef(hukidashiRotation[0], hukidashiRotation[1], 0);
-								GL11.glRotatef((float) -(Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
-								GL11.glTranslatef(-nearCenterPoint[suspendNumber][0], -nearCenterPoint[suspendNumber][1], 0);
-								// GUI位置を元に戻す
+								renderHukidashi(MC, gui, alphaFloat, suspendNumber, hukidashiPixels);
 							}
 						}
 					}
@@ -356,20 +338,43 @@ public class HukidashiChatTick implements ITickHandler
 						// フェードイン、フェードアウト処理
 						if(suspendTime[i] > displayTime[1] + displayTime[2])
 						{
-							renderHukidashiChat(writingString[i], i, 1.0F - (float)(suspendTime[i] - displayTime[1] - displayTime[2]) / (float)displayTime[0]);
+							renderHukidashiMainGUI(writingString[i], i, 1.0F - (float)(suspendTime[i] - displayTime[1] - displayTime[2]) / (float)displayTime[0]);
 						}
 						else if(suspendTime[i] > displayTime[2])
 						{
-							renderHukidashiChat(writingString[i], i, 1.0F);
+							renderHukidashiMainGUI(writingString[i], i, 1.0F);
 						}
 						else
 						{
-							renderHukidashiChat(writingString[i], i, (float)suspendTime[i] / displayTime[2]);
+							renderHukidashiMainGUI(writingString[i], i, (float)suspendTime[i] / displayTime[2]);
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private void renderHukidashi(Minecraft MC, Gui gui, float alphaFloat, int suspendNumber, int[] hukidashiPixels)
+	{
+		ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
+		float SRMagnification = MC.displayHeight / SR.getScaledHeight();
+		//MC.fontRenderer.drawString("o", ((int)((SR.getScaledWidth() / 2) + (hukidashiPixels[1] / SRMagnification))), ((int)((SR.getScaledHeight() / 2) + (hukidashiPixels[2] / SRMagnification))), 16777215);
+
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
+		MC.getTextureManager().bindTexture(guiHukidashi);
+
+		GL11.glTranslatef(nearCenterPoint[suspendNumber][0], nearCenterPoint[suspendNumber][1], 0);
+		GL11.glRotatef((float) (Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
+		GL11.glTranslatef(-hukidashiRotation[0], -hukidashiRotation[1], 0);
+		// GUI位置の調整
+
+		gui.drawTexturedModalRect(0, 0, 0, 0, hukidashiSize[0], hukidashiSize[1]);
+		// 吹き出しの描画
+
+		GL11.glTranslatef(hukidashiRotation[0], hukidashiRotation[1], 0);
+		GL11.glRotatef((float) -(Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
+		GL11.glTranslatef(-nearCenterPoint[suspendNumber][0], -nearCenterPoint[suspendNumber][1], 0);
+		// GUI位置を元に戻す
 	}
 
 	private int[] checkHukidashiView(Minecraft MC, EntityPlayer tempPlayer, double tempPlayerSpace)
@@ -421,6 +426,62 @@ public class HukidashiChatTick implements ITickHandler
 			}
 		}
 
+		// 実行するか, 横のピクセル, 縦のピクセル
+		int[] returnInt = {BooleanUtils.toInteger(returnBoolean), widthPixel, heightPixel};
+
+		return returnInt;
+	}
+
+	private int[] checkHukidashiView(Minecraft MC, int[] location, double tempPlayerSpace)
+	{
+		// 画面内に相手プレイヤーがいるかの確認
+
+		float viewYaw = MathHelper.wrapAngleTo180_float(MC.thePlayer.rotationYaw);
+		int widthPixel = 0, heightPixel = 0;
+		// 右が+、上も+
+
+		tempPlayerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - location[0], 2) + Math.pow(MC.thePlayer.posY - location[1], 2) + Math.pow(MC.thePlayer.posZ - location[2], 2));
+		// プレイヤー間の距離の測定
+
+		boolean returnBoolean = false;
+
+		if(viewYaw < 0)
+		{
+			viewYaw += 180;
+		}
+		else if(viewYaw > 0)
+		{
+			viewYaw -= 180;
+		}
+
+		float playerSpaceYaw = (float)(-Math.atan2(MC.thePlayer.posX - location[0], MC.thePlayer.posZ - location[2]) / Math.PI * 180);
+		float playerSpacePitch = (float)(Math.asin((MC.thePlayer.posY - location[1] - 1) / tempPlayerSpace) / Math.PI * 180);
+
+		if(tempPlayerSpace < playerSpaceOption && tempPlayerSpace > 1)
+		{
+			if(playerSpacePitch - (widthPerFov * MC.displayHeight) < MC.thePlayer.rotationPitch && playerSpacePitch + (widthPerFov * MC.displayHeight) > MC.thePlayer.rotationPitch && Math.abs(playerSpacePitch) < 75)
+			{
+				heightPixel = (int)((playerSpacePitch - MC.thePlayer.rotationPitch) * widthPerFov);
+
+				if (viewYaw < playerSpaceYaw + gameSettingFov && viewYaw > playerSpaceYaw - gameSettingFov)
+				{
+					returnBoolean = true;
+					widthPixel = (int)((playerSpaceYaw - viewYaw) * widthPerFov);
+				}
+				else if(180 < playerSpaceYaw + gameSettingFov && (playerSpaceYaw + gameSettingFov) > viewYaw + 360)
+				{
+					returnBoolean = true;
+					widthPixel = (int)((playerSpaceYaw - viewYaw - 360) * widthPerFov);
+				}
+				else if(-180 > playerSpaceYaw - gameSettingFov && (playerSpaceYaw - gameSettingFov) < viewYaw - 360)
+				{
+					returnBoolean = true;
+					widthPixel = (int)((playerSpaceYaw - viewYaw + 360) * widthPerFov);
+				}
+			}
+		}
+
+		// 実行するか, 横のピクセル, 縦のピクセル
 		int[] returnInt = {BooleanUtils.toInteger(returnBoolean), widthPixel, heightPixel};
 
 		return returnInt;
