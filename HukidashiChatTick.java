@@ -1,6 +1,7 @@
 package anaso.HukidashiChat;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.EnumSet;
 
@@ -12,9 +13,11 @@ import org.bouncycastle.util.Arrays;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL11.*;
+import org.objectweb.asm.tree.analysis.Value;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiPlayerInfo;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -27,6 +30,8 @@ import net.minecraft.src.ModLoader;
 import net.minecraft.util.EnumMovingObjectType;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
+import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import cpw.mods.fml.common.*;
 
 public class HukidashiChatTick implements ITickHandler
@@ -78,7 +83,14 @@ public class HukidashiChatTick implements ITickHandler
 	int gameSettingFov;
 	float widthPerFov;  // 画面1ピクセルあたりの視野角
 
+	// GetChatListenerとの値の受け渡し
 	GetChatListener getChatListener;
+
+	// 値をまとめたインスタンスの可変長配列
+	ArrayList<HukidashiValues> arrayHukidashiValues = new ArrayList<HukidashiValues>();
+
+	// 削除するインスタンスのオブジェクト保管庫
+	ArrayList<HukidashiValues> arrayDeleteValues = new ArrayList<HukidashiValues>();
 
 	public HukidashiChatTick(HashMap Options, GetChatListener getChatListener)
 	{
@@ -111,8 +123,6 @@ public class HukidashiChatTick implements ITickHandler
 		stringColumn = (Integer)Options.get("StringColumn");
 		stringWidth = (Integer)Options.get("StringWidth");
 
-
-
 		if(nameColorSplit[3] != 0)
 		{
 			nameShadow = true;
@@ -134,16 +144,6 @@ public class HukidashiChatTick implements ITickHandler
 
 		guiHukidashiMain = new ResourceLocation("hukidashichat:textures/gui/hukidashi_gui.png");
 		guiHukidashi = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
-
-		stringColumn++; // 配列の0が名前のため、1つ多くしておく
-		writingString = new String[4][stringColumn];
-		for(int i = 0; i < 4; i ++)
-		{
-			for(int j = 0; j < stringColumn; j ++)
-			{
-				writingString[i][j] = "";
-			}
-		}
 	}
 
 	@Override
@@ -232,6 +232,77 @@ public class HukidashiChatTick implements ITickHandler
 		suspendTime[suspendNumber]--;
 	}
 
+	public void renderHukidashiMainGUI(HukidashiValues hukidashiValues)
+	{
+		Minecraft MC = ModLoader.getMinecraftInstance();
+
+		System.out.println("render : " + hukidashiValues.chatString);
+
+		// プレイヤー間の距離
+		EntityPlayer player = MC.theWorld.getPlayerEntityByName(hukidashiValues.sendPlayerString);
+		double playerSpace = Double.MAX_VALUE;
+		if(player != null)
+		{
+			playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - player.posX, 2) + Math.pow(MC.thePlayer.posY - player.posY, 2) + Math.pow(MC.thePlayer.posZ - player.posZ, 2));
+		}
+
+		if(enableAllMessage || playerSpace < playerSpaceOption)  // 全てのメッセージを表示する、もしくは描画距離以内だったとき
+		{
+			float alphaFloat = 1;
+
+			if(hukidashiValues.fadeinTime > 0)
+			{
+				alphaFloat = (float)(displayTime[0] - hukidashiValues.fadeinTime / (float)displayTime[0]);
+				hukidashiValues.fadeinTime--;
+			}
+			else if(hukidashiValues.viewTime > 0)
+			{
+				alphaFloat = 1;
+				hukidashiValues.viewTime--;
+			}
+			else if(hukidashiValues.fadeoutTime > 0)
+			{
+				alphaFloat = (float)((float)hukidashiValues.fadeoutTime / (float)displayTime[2]);
+				hukidashiValues.fadeoutTime--;
+			}
+			else
+			{
+				arrayDeleteValues.add(hukidashiValues);
+				alphaFloat = 0;
+			}
+
+			// テクスチャの描画
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)(alpha * alphaFloat /255));
+			MC.getTextureManager().bindTexture(guiHukidashiMain);
+			Gui gui = new Gui();
+			gui.drawTexturedModalRect(hukidashiValues.guiPositionX, hukidashiValues.guiPositionY, 0, 0, textureSize[0], textureSize[1]);
+
+			// 文字の描画
+			int fadeAlpha = (int)(alpha * alphaFloat);
+			int tempNameColor = ((nameColorSplit[0] & 255) << 16) + ((nameColorSplit[1] & 255) << 8) + (nameColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
+			int tempChatColor = ((textColorSplit[0] & 255) << 16) + ((textColorSplit[1] & 255) << 8) + (textColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
+
+			MC.fontRenderer.drawString(hukidashiValues.nameString, hukidashiValues.guiPositionX + textPosition[0], hukidashiValues.guiPositionY + textPosition[1], tempNameColor, nameShadow);
+
+			/*
+			// 複数行の調整 途中
+			for(int j = 0; j < stringColumn; j++)
+			{
+				// 複数行の調整
+				if(MC.fontRenderer.getStringWidth(writingString[i][j]) > stringWidth)
+				{
+					String trimString = MC.fontRenderer.trimStringToWidth(writingString[i][j], stringWidth);
+					if(j < stringColumn - 1)
+					{
+						writingString[i][j+1] = writingString[i][j].substring(trimString.length());
+					}
+					writingString[i][j] = trimString;
+				}
+			}
+			*/
+		}
+	}
+
 	// 文字列を取得して描画関数を呼び出す
 	@Override
 	public void tickEnd(EnumSet<TickType> type, Object... tickData)
@@ -248,6 +319,47 @@ public class HukidashiChatTick implements ITickHandler
 
 				if(!listenerString[0].equals(""))
 				{
+					System.out.println("catch string : " + listenerString[0]);
+					int listNumber = checkAvailableNumber(arrayHukidashiValues);
+
+					// インスタンス生成
+					HukidashiValues hukidashiValues = new HukidashiValues(listNumber);
+					hukidashiValues.setViewTimes(displayTime[0], displayTime[1], displayTime[2]);
+
+					// GUIスケールの倍率の補正
+					ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
+
+					int tempGuiPosition[] = {guiRawPosition[listNumber][0], guiRawPosition[listNumber][1]};
+
+					// 位置の調整
+					if(guiRawPosition[listNumber][0] < 0)
+					{
+						tempGuiPosition[0] = SR.getScaledWidth() + guiRawPosition[listNumber][0] - textureSize[0];
+					}
+
+					if(guiRawPosition[listNumber][1] < 0)
+					{
+						tempGuiPosition[1] = SR.getScaledHeight() + guiRawPosition[listNumber][1] - textureSize[1];
+					}
+					// GUIの位置の設定
+					hukidashiValues.setGuiViewPosition(tempGuiPosition[0], tempGuiPosition[1]);
+
+					hukidashiValues.setHukidashiStrings(listenerString[0], listenerString[1]);
+
+					arrayHukidashiValues.add(hukidashiValues);
+				}
+
+				if(arrayHukidashiValues.size() > 0)
+				{
+					for(HukidashiValues values : arrayHukidashiValues)
+					{
+						renderHukidashiMainGUI(values);
+					}
+
+					checkAndRemoveInstance(arrayHukidashiValues, arrayDeleteValues);
+				}
+
+				/*
 
 					for(int i = 0; i < 4; i++)
 					{
@@ -264,9 +376,6 @@ public class HukidashiChatTick implements ITickHandler
 							listenerString[1] = "";
 							suspendTime[i] = displayTime[0] + displayTime[1] + displayTime[2];
 
-							ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
-							// GUIスケールに合わせて調整
-
 							for(int j = 1; j < stringColumn; j++)
 							{
 								// 複数行の調整
@@ -281,7 +390,7 @@ public class HukidashiChatTick implements ITickHandler
 								}
 							}
 
-							// 位置の調整
+							// ここ以下 多分不要
 							if(guiRawPosition[i][0] < 0)
 							{
 								guiPosition[i][0] = SR.getScaledWidth() + guiRawPosition[i][0] - textureSize[0];
@@ -294,7 +403,11 @@ public class HukidashiChatTick implements ITickHandler
 							break;
 						}
 					}
-				}
+				 */
+			}
+
+			/*
+				//
 
 				gameSettingFov = 70 + (int)(MC.gameSettings.fovSetting * 40);
 				//widthPerFov = ((float)MC.displayWidth / gameSettingFov);
@@ -350,9 +463,10 @@ public class HukidashiChatTick implements ITickHandler
 						}
 					}
 				}
-			}
+			 */
 		}
 	}
+
 
 	private void renderHukidashi(Minecraft MC, Gui gui, float alphaFloat, int suspendNumber, int[] hukidashiPixels)
 	{
@@ -432,9 +546,10 @@ public class HukidashiChatTick implements ITickHandler
 		return returnInt;
 	}
 
-	private int[] checkHukidashiView(Minecraft MC, int[] location, double tempPlayerSpace)
+	private int[] checkHukidashiView(Minecraft MC, float[] location, double tempPlayerSpace)
 	{
 		// 画面内に相手プレイヤーがいるかの確認
+		// location [X Y Z] の順;
 
 		float viewYaw = MathHelper.wrapAngleTo180_float(MC.thePlayer.rotationYaw);
 		int widthPixel = 0, heightPixel = 0;
@@ -483,6 +598,41 @@ public class HukidashiChatTick implements ITickHandler
 
 		// 実行するか, 横のピクセル, 縦のピクセル
 		int[] returnInt = {BooleanUtils.toInteger(returnBoolean), widthPixel, heightPixel};
+
+		return returnInt;
+	}
+
+	boolean checkAndRemoveInstance(ArrayList<HukidashiValues> arrayHukidashiValues, ArrayList<HukidashiValues>arrayDeleteValues)
+	{
+		boolean returnBoolean = false;
+
+		for(HukidashiValues deleteValues : arrayDeleteValues)
+		{
+			returnBoolean = arrayHukidashiValues.remove(deleteValues);
+			//System.out.println("Removed Object arrayList");
+		}
+
+		return returnBoolean;
+	}
+
+	int checkAvailableNumber(ArrayList<HukidashiValues> arrayHukidashiValues)
+	{
+		boolean[] checkList = new boolean[4];
+		int returnInt = Integer.MAX_VALUE;
+
+		for(HukidashiValues values : arrayHukidashiValues)
+		{
+			checkList[values.listNumber] = true;
+		}
+
+		for(int i = 0; i < checkList.length; i++)
+		{
+			if(!checkList[i])
+			{
+				returnInt = i;
+				break;
+			}
+		}
 
 		return returnInt;
 	}
