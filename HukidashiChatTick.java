@@ -1,6 +1,7 @@
 package anaso.HukidashiChat;
 
 import java.lang.reflect.Array;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.EnumSet;
@@ -82,6 +83,8 @@ public class HukidashiChatTick implements ITickHandler
 
 	int gameSettingFov;
 	float widthPerFov;  // 画面1ピクセルあたりの視野角
+
+	int allHukidashiCount = 4;
 
 	// GetChatListenerとの値の受け渡し
 	GetChatListener getChatListener;
@@ -236,7 +239,7 @@ public class HukidashiChatTick implements ITickHandler
 	{
 		Minecraft MC = ModLoader.getMinecraftInstance();
 
-		System.out.println("render : " + hukidashiValues.chatString);
+		//System.out.println("render : " + hukidashiValues.chatString);
 
 		// プレイヤー間の距離
 		EntityPlayer player = MC.theWorld.getPlayerEntityByName(hukidashiValues.sendPlayerString);
@@ -284,22 +287,20 @@ public class HukidashiChatTick implements ITickHandler
 
 			MC.fontRenderer.drawString(hukidashiValues.nameString, hukidashiValues.guiPositionX + textPosition[0], hukidashiValues.guiPositionY + textPosition[1], tempNameColor, nameShadow);
 
-			/*
-			// 複数行の調整 途中
-			for(int j = 0; j < stringColumn; j++)
+			int count = 0;
+			for(String viewStrings : hukidashiValues.trimmedChatStrings)
 			{
-				// 複数行の調整
-				if(MC.fontRenderer.getStringWidth(writingString[i][j]) > stringWidth)
+				if(!viewStrings.equals("") || count < stringColumn || fadeAlpha != 0)
 				{
-					String trimString = MC.fontRenderer.trimStringToWidth(writingString[i][j], stringWidth);
-					if(j < stringColumn - 1)
-					{
-						writingString[i][j+1] = writingString[i][j].substring(trimString.length());
-					}
-					writingString[i][j] = trimString;
+					System.out.println(fadeAlpha);
+					MC.fontRenderer.drawString(viewStrings, hukidashiValues.guiPositionX + textPosition[2], hukidashiValues.guiPositionY + textPosition[3] + (count * MC.fontRenderer.FONT_HEIGHT), tempChatColor, textShadow);
 				}
+				else
+				{
+					break;
+				}
+				count++;
 			}
-			*/
 		}
 	}
 
@@ -319,34 +320,39 @@ public class HukidashiChatTick implements ITickHandler
 
 				if(!listenerString[0].equals(""))
 				{
-					System.out.println("catch string : " + listenerString[0]);
+					//System.out.println("catch string : " + listenerString[0]);
 					int listNumber = checkAvailableNumber(arrayHukidashiValues);
 
-					// インスタンス生成
-					HukidashiValues hukidashiValues = new HukidashiValues(listNumber);
-					hukidashiValues.setViewTimes(displayTime[0], displayTime[1], displayTime[2]);
-
-					// GUIスケールの倍率の補正
-					ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
-
-					int tempGuiPosition[] = {guiRawPosition[listNumber][0], guiRawPosition[listNumber][1]};
-
-					// 位置の調整
-					if(guiRawPosition[listNumber][0] < 0)
+					if(listNumber < allHukidashiCount)
 					{
-						tempGuiPosition[0] = SR.getScaledWidth() + guiRawPosition[listNumber][0] - textureSize[0];
+						// インスタンス生成
+						HukidashiValues hukidashiValues = new HukidashiValues(listNumber);
+						hukidashiValues.setViewTimes(displayTime[0], displayTime[1], displayTime[2]);
+
+						// GUIスケールの倍率の補正
+						ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
+
+						int tempGuiPosition[] = {guiRawPosition[listNumber][0], guiRawPosition[listNumber][1]};
+
+						// 位置の調整
+						if(guiRawPosition[listNumber][0] < 0)
+						{
+							tempGuiPosition[0] = SR.getScaledWidth() + guiRawPosition[listNumber][0] - textureSize[0];
+						}
+
+						if(guiRawPosition[listNumber][1] < 0)
+						{
+							tempGuiPosition[1] = SR.getScaledHeight() + guiRawPosition[listNumber][1] - textureSize[1];
+						}
+						// GUIの位置の設定
+						hukidashiValues.setGuiViewPosition(tempGuiPosition[0], tempGuiPosition[1]);
+
+						hukidashiValues.setHukidashiStrings(listenerString[0], listenerString[1]);
+
+						hukidashiValues.setTrimmedChatStrings(trimChatString(MC, listenerString[1]));
+
+						arrayHukidashiValues.add(hukidashiValues);
 					}
-
-					if(guiRawPosition[listNumber][1] < 0)
-					{
-						tempGuiPosition[1] = SR.getScaledHeight() + guiRawPosition[listNumber][1] - textureSize[1];
-					}
-					// GUIの位置の設定
-					hukidashiValues.setGuiViewPosition(tempGuiPosition[0], tempGuiPosition[1]);
-
-					hukidashiValues.setHukidashiStrings(listenerString[0], listenerString[1]);
-
-					arrayHukidashiValues.add(hukidashiValues);
 				}
 
 				if(arrayHukidashiValues.size() > 0)
@@ -358,112 +364,7 @@ public class HukidashiChatTick implements ITickHandler
 
 					checkAndRemoveInstance(arrayHukidashiValues, arrayDeleteValues);
 				}
-
-				/*
-
-					for(int i = 0; i < 4; i++)
-					{
-						if(suspendTime[i] <= 0)
-						{
-							for(int j = 0; j < stringColumn; j ++)
-							{
-								writingString[i][j] = "";  //初期化
-							}
-
-							writingString[i][0] = listenerString[0];
-							writingString[i][1] = listenerString[1];
-							listenerString[0] = "";
-							listenerString[1] = "";
-							suspendTime[i] = displayTime[0] + displayTime[1] + displayTime[2];
-
-							for(int j = 1; j < stringColumn; j++)
-							{
-								// 複数行の調整
-								if(MC.fontRenderer.getStringWidth(writingString[i][j]) > stringWidth)
-								{
-									String trimString = MC.fontRenderer.trimStringToWidth(writingString[i][j], stringWidth);
-									if(j < stringColumn - 1)
-									{
-										writingString[i][j+1] = writingString[i][j].substring(trimString.length());
-									}
-									writingString[i][j] = trimString;
-								}
-							}
-
-							// ここ以下 多分不要
-							if(guiRawPosition[i][0] < 0)
-							{
-								guiPosition[i][0] = SR.getScaledWidth() + guiRawPosition[i][0] - textureSize[0];
-							}
-							if(guiRawPosition[i][1] < 0)
-							{
-								guiPosition[i][1] = SR.getScaledHeight() + guiRawPosition[i][1] - textureSize[1];
-							}
-
-							break;
-						}
-					}
-				 */
 			}
-
-			/*
-				//
-
-				gameSettingFov = 70 + (int)(MC.gameSettings.fovSetting * 40);
-				//widthPerFov = ((float)MC.displayWidth / gameSettingFov);
-				ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
-				widthPerFov = ((float)SR.getScaledWidth() / (float)gameSettingFov);
-				// 横1ピクセルあたりの角度
-
-				int[] centerPoint = {SR.getScaledWidth() / 2, SR.getScaledHeight() / 2};
-
-				for(int i = 0; i < 4; i++)
-				{
-					//System.out.println(suspendTime[i]);
-					if(suspendTime[i] > 0)
-					{
-						int[][] tempPoint = {
-								{guiPosition[i][0] + hukidashiInGui[0], guiPosition[i][1] + hukidashiInGui[1]},
-								{guiPosition[i][0] + textureSize[0] - hukidashiInGui[0], guiPosition[i][1] + hukidashiInGui[1]},
-								{guiPosition[i][0] + hukidashiInGui[0], guiPosition[i][1] + textureSize[1] - hukidashiInGui[1]},
-								{guiPosition[i][0] + textureSize[0] - hukidashiInGui[0], guiPosition[i][1] + textureSize[1] - hukidashiInGui[1]}
-						};
-
-						// 最短の位置を調べる
-						float[] tempCenterPoint = new float[4];
-						tempCenterPoint[0] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[0][0]), 2) + Math.pow((centerPoint[1] - tempPoint[0][1]), 2));
-						tempCenterPoint[1] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[1][0]), 2) + Math.pow((centerPoint[1] - tempPoint[1][1]), 2));
-						tempCenterPoint[2] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[2][0]), 2) + Math.pow((centerPoint[1] - tempPoint[2][1]), 2));
-						tempCenterPoint[3] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[3][0]), 2) + Math.pow((centerPoint[1] - tempPoint[3][1]), 2));
-
-						float tempMin = Float.MAX_VALUE;
-
-						for(int k = 0; k < 4; k++)
-						{
-							if(tempMin > tempCenterPoint[k])
-							{
-								tempMin = tempCenterPoint[k];
-								nearCenterPoint[i][0] = tempPoint[k][0];
-								nearCenterPoint[i][1] = tempPoint[k][1];
-							}
-						}
-
-						// フェードイン、フェードアウト処理
-						if(suspendTime[i] > displayTime[1] + displayTime[2])
-						{
-							renderHukidashiMainGUI(writingString[i], i, 1.0F - (float)(suspendTime[i] - displayTime[1] - displayTime[2]) / (float)displayTime[0]);
-						}
-						else if(suspendTime[i] > displayTime[2])
-						{
-							renderHukidashiMainGUI(writingString[i], i, 1.0F);
-						}
-						else
-						{
-							renderHukidashiMainGUI(writingString[i], i, (float)suspendTime[i] / displayTime[2]);
-						}
-					}
-				}
-			 */
 		}
 	}
 
@@ -600,6 +501,46 @@ public class HukidashiChatTick implements ITickHandler
 		int[] returnInt = {BooleanUtils.toInteger(returnBoolean), widthPixel, heightPixel};
 
 		return returnInt;
+	}
+
+	String[] trimChatString(Minecraft MC, String chatString)
+	{
+		ArrayList<String> trimmingString = new ArrayList<String>();
+		trimmingString.add(chatString);
+
+		// 複数行の調整 途中
+		for(int count = 0; true; count++)
+		{
+			if(trimmingString.size() > count)
+			{
+				// 改行が必要な長さ以上なら
+				if(MC.fontRenderer.getStringWidth(trimmingString.get(count)) > stringWidth)
+				{
+					// トリミング
+					String trimString = MC.fontRenderer.trimStringToWidth(trimmingString.get(count), stringWidth);
+
+					// 次への持ち越し
+					if(trimString.length() > 0)
+					{
+						trimmingString.add(trimmingString.get(count).substring(trimString.length()));
+					}
+
+					// 今の値をトリミング後に置き換える
+					trimmingString.set(count, trimString);
+				}
+				else
+				{
+					// 改行が必要ないなら終了
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		return (String[])trimmingString.toArray(new String[trimmingString.size()]);
 	}
 
 	boolean checkAndRemoveInstance(ArrayList<HukidashiValues> arrayHukidashiValues, ArrayList<HukidashiValues>arrayDeleteValues)

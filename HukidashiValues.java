@@ -7,6 +7,8 @@ class HukidashiValues
 	String nameString = "";  // 名前欄
 	String chatString = "";  // 表示するメッセージ
 
+	String[] trimmedChatStrings;  // 区切った後のメッセージ
+
 	// GUIの位置
 	int guiPositionX = 0;
 	int guiPositionY = 0;
@@ -50,6 +52,11 @@ class HukidashiValues
 		this.sendPlayerString = nameString;
 
 		this.chatString = chatString;
+	}
+
+	void setTrimmedChatStrings(String[] trimmedStrings)
+	{
+		this.trimmedChatStrings = trimmedStrings;
 	}
 
 	void setSendPlayerString(String sendPlayerString)
