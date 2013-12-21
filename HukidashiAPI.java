@@ -20,7 +20,7 @@ public class HukidashiAPI
 	static public void setHukidashi(String nameString, String chatString, boolean sendMeFlag)
 	{
 		String[] sendStrings = {nameString, chatString};
-		hukidashiChatTick.setBufferedHukidashiValues(sendStrings, false);
+		hukidashiChatTick.setBufferedHukidashiValues(sendStrings, sendMeFlag);
 	}
 
 	static public void setHukidashi(String nameString, String chatString, double posX, double posY, double posZ)

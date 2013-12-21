@@ -45,3 +45,22 @@ Chat Text Shadow -> 文字に影をつけるか。 true=つける false=つけ�
 ・インストール
 MinecraftForgeを導入することで作成されたmodsフォルダに、zipファイルを入れてください。
 Mod作成に使用したMinecraftForgeのバージョンはファイル名を参照してください。
+
+・外部連携
+他のModと連携ができるようになりました。
+anaso.HukidashiChat.HukidashiAPI.setHukidashi(hoge hoge)のクラスメソッドに命令を投げ込みます。
+私のModでも連携しているので、参考にしてください。 https://github.com/anaso/ReadSign/blob/master/ReadSignKey.java
+現在使用できるクラスメソッドを以下に記します。
+
+setHukidashi(String nameString, String chatString)
+一番シンプルなAPI、自分が発言したことにするので、どこにいても表示されます。
+nameStringに発言した人や物、chatStringにチャットとして表示する内容を渡してください。
+
+setHukidashi(String nameString, String chatString, boolean sendMeFlag)
+上の拡張型です。sendMeFlagをfalseにすることで、nameStringのプレイヤーが発言したことにします。相手の名前は正しく入力しましょう。
+
+static public void setHukidashi(String nameString, String chatString, double posX, double posY, double posZ)
+自分やプレイヤーではなく、特定の座標で発言したい場合に使用します。double型なので、小数点でもOK
+
+static public void setHukidashi(String nameString, String[] chatStrings, double posX, double posY, double posZ)
+上の拡張型です。チャットの引数が配列になっており、4つまでの配列ならば改行して表示します。

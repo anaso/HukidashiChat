@@ -101,7 +101,7 @@ public class HukidashiChat
 			Property propNamePosX = cfg.get(guiPos, "Player Name Pos X", 9);
 			Property propNamePosY = cfg.get(guiPos, "Player Name Pos Y", 5);
 			Property propTextPosX = cfg.get(guiPos, "Chat Text Pos X", 10);
-			Property propTextPosY = cfg.get(guiPos, "Chat Text Pos Y", 18);
+			Property propTextPosY = cfg.get(guiPos, "Chat Text Pos Y", 17);
 
 			Property propNameColorR = cfg.get(textColor, "Player Name Color Red", 255, "Min = 0, Max = 255");
 			Property propNameColorG = cfg.get(textColor, "Player Name Color Green", 255, "Min = 0, Max = 255");

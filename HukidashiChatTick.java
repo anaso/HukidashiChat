@@ -220,7 +220,7 @@ public class HukidashiChatTick implements ITickHandler
 				{
 					MC.fontRenderer.drawString(viewStrings, hukidashiValues.guiPositionX + textPosition[2], hukidashiValues.guiPositionY + textPosition[3] + (count * MC.fontRenderer.FONT_HEIGHT), tempChatColor, textShadow);
 				}
-				else
+				else if(count >= stringColumn)
 				{
 					break;
 				}
