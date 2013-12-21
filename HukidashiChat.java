@@ -39,6 +39,12 @@ import net.minecraft.util.ResourceLocation;
 	version = "1.6"
 )
 
+@NetworkMod
+(
+		clientSideRequired = false,
+		serverSideRequired = false
+)
+
 public class HukidashiChat
 {
 	@SidedProxy(clientSide = "anaso.HukidashiChat.ClientProxy", serverSide = "anaso.HukidashiChat.CommonProxy")
@@ -53,7 +59,7 @@ public class HukidashiChat
 
 	String[] empty = {""};
 
-	GetChatListener getChatListener;
+	HukidashiChatTick hukidashiChatTick;
 
 	@EventHandler
 	public void PreInit(FMLPreInitializationEvent event)
@@ -191,13 +197,13 @@ public class HukidashiChat
 	@EventHandler
 	public void Init(FMLInitializationEvent event)
 	{
-		getChatListener = new GetChatListener(Options);
-		proxy.RegisterTicking(Options, getChatListener);
+		hukidashiChatTick = new HukidashiChatTick(Options);
+		proxy.RegisterTicking(hukidashiChatTick);
 	}
 
 	@EventHandler
 	public void PostInit(FMLPostInitializationEvent event)
 	{
-		NetworkRegistry.instance().registerChatListener(getChatListener);
+		NetworkRegistry.instance().registerChatListener(new GetChatListener(Options, hukidashiChatTick));
 	}
 }

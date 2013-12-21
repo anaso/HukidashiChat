@@ -6,7 +6,7 @@ import net.minecraft.src.*;
 
 public class CommonProxy
 {
-	public void RegisterTicking(HashMap Options, GetChatListener getChatListener)
+	public void RegisterTicking(HukidashiChatTick hukidashiChatTick)
 	{
 	}
 }

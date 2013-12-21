@@ -41,15 +41,6 @@ public class HukidashiChatTick implements ITickHandler
 
 	private final EnumSet<TickType> tickSet = EnumSet.of(TickType.RENDER);
 
-	String[] listenerString = {"",""};  // リスナーから受け取る文字列
-	String[] bufferedString = {"",""};  // APIからの文字列のバッファ
-
-	int[] suspendTime = {0, 0, 0, 0};  // 表示時間の保持
-	String[][] writingString;  // 表示するメッセージの保持  [メッセージの番号][0名前 1テキスト]
-
-	int[][] guiPosition = {{30,30},{230,30},{30,130},{230,130}};  // GUIの初期位置
-	// X, Y
-
 	int alpha = 255;  // 透過率 Max255
 	int[] displayTime = {0, 200, 20};  // 初期表示時間
 	int[][] guiRawPosition = new int[4][2];  // GUIの位置(コンフィグの値)
@@ -72,8 +63,6 @@ public class HukidashiChatTick implements ITickHandler
 	int stringColumn = 4;  // テキストの列
 	int stringWidth = 83;  // 横の長さ
 
-	int[][] nearCenterPoint = {{0,0},{0,0},{0,0},{0,0}};
-
 	ResourceLocation guiHukidashiMain;
 	ResourceLocation guiHukidashi;
 
@@ -86,31 +75,27 @@ public class HukidashiChatTick implements ITickHandler
 
 	int allHukidashiCount = 4;
 
-	// GetChatListenerとの値の受け渡し
-	GetChatListener getChatListener;
-
 	// 値をまとめたインスタンスの可変長配列
 	ArrayList<HukidashiValues> arrayHukidashiValues = new ArrayList<HukidashiValues>();
 
 	// 削除するインスタンスのオブジェクト保管庫
 	ArrayList<HukidashiValues> arrayDeleteValues = new ArrayList<HukidashiValues>();
 
-	public HukidashiChatTick(HashMap Options, GetChatListener getChatListener)
+	// 受け取った文字列のバッファ
+	ArrayList<HukidashiValues> arrayBufferHukidashiValues = new ArrayList<HukidashiValues>();
+
+	int[] centerPoint = {0, 0};
+
+	public HukidashiChatTick(HashMap Options)
 	{
 		constructorMethod(Options);
-		this.getChatListener = getChatListener;
 	}
 
 	public void constructorMethod(HashMap Options)
 	{
 		this.Options = Options;
 
-		guiPosition = (int[][])Options.get("GuiPosition");
-
-		for (int i = 0; i < guiPosition.length; i++)
-		{
-			System.arraycopy(guiPosition[i], 0, guiRawPosition[i], 0, guiPosition[i].length);
-		}
+		guiRawPosition = (int[][])Options.get("GuiPosition");
 
 		alpha = (Integer)(Options.get("Alpha"));
 		displayTime = (int[])(Options.get("DisplayTime"));
@@ -155,86 +140,6 @@ public class HukidashiChatTick implements ITickHandler
 
 	}
 
-	public void renderHukidashiMainGUI(String[] writeString, int suspendNumber, float alphaFloat)
-	{
-		Minecraft MC = ModLoader.getMinecraftInstance();
-
-		// プレイヤー間の距離
-		EntityPlayer player = MC.theWorld.getPlayerEntityByName(writeString[0]);
-		double playerSpace = Double.MAX_VALUE;
-		if(player != null)
-		{
-			playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - player.posX, 2) + Math.pow(MC.thePlayer.posY - player.posY, 2) + Math.pow(MC.thePlayer.posZ - player.posZ, 2));
-		}
-
-		if(enableAllMessage || playerSpace < playerSpaceOption)  // 全てのメッセージを表示する、もしくは描画距離以内だったとき
-		{
-			// テクスチャの設定、表示
-			GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
-			MC.getTextureManager().bindTexture(guiHukidashiMain);
-			Gui gui = new Gui();
-			gui.drawTexturedModalRect(guiPosition[suspendNumber][0], guiPosition[suspendNumber][1], 0, 0, textureSize[0], textureSize[1]);
-
-			int fadeAlpha = (int)(alpha * alphaFloat);
-
-			// フェードイン、フェードアウト用
-			int tempNameColor = ((nameColorSplit[0] & 255) << 16) + ((nameColorSplit[1] & 255) << 8) + (nameColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
-			int tempTextColor = ((textColorSplit[0] & 255) << 16) + ((textColorSplit[1] & 255) << 8) + (textColorSplit[2] & 255) + ((fadeAlpha & 255) << 24);
-
-			// チャット内容の描画
-			MC.fontRenderer.drawString(writeString[0], guiPosition[suspendNumber][0] + textPosition[0], guiPosition[suspendNumber][1] + textPosition[1], tempNameColor, nameShadow);
-			for(int i = 1; i < stringColumn; i++)
-			{
-				if(!writeString[i].equals(""))
-				{
-					MC.fontRenderer.drawString(writeString[i], guiPosition[suspendNumber][0] + textPosition[2], guiPosition[suspendNumber][1] + textPosition[3] + ((i-1) * MC.fontRenderer.FONT_HEIGHT), tempTextColor, textShadow);
-				}
-			}
-
-			try
-			{
-
-				if(!writeString[0].equals("") && viewHukidashi)
-				{
-					// 吹き出しの表示処理開始
-
-					//System.out.println(player.worldObj.getWorldInfo().getWorldName() + " : Dim " + player.dimension);
-
-					if(player.worldObj.getWorldInfo().getWorldName().equals(MC.thePlayer.worldObj.getWorldInfo().getWorldName()) && player.dimension == MC.thePlayer.dimension)
-					{
-
-						if(playerSpaceOption > playerSpace)
-						{
-							//System.out.println("in hukidashi");
-							int[] hukidashiPixels = checkHukidashiView(MC, player, playerSpace);
-
-							if(hukidashiPixels[0] == 1)
-							{
-								// 吹き出しの表示
-								renderHukidashi(MC, gui, alphaFloat, suspendNumber, hukidashiPixels);
-							}
-						}
-					}
-				}
-			}
-
-			catch (Exception e)
-			{
-				if(suspendTime[suspendNumber] % 20 == 0)
-				{
-					System.out.println(e);
-				}
-			}
-		}
-
-		// System.out.println(MC.theWorld.playerEntities);
-
-		// 16777215 white
-		// 65793 black
-
-		suspendTime[suspendNumber]--;
-	}
-
 	public void renderHukidashiMainGUI(HukidashiValues hukidashiValues)
 	{
 		Minecraft MC = ModLoader.getMinecraftInstance();
@@ -242,14 +147,34 @@ public class HukidashiChatTick implements ITickHandler
 		//System.out.println("render : " + hukidashiValues.chatString);
 
 		// プレイヤー間の距離
-		EntityPlayer player = MC.theWorld.getPlayerEntityByName(hukidashiValues.sendPlayerString);
 		double playerSpace = Double.MAX_VALUE;
-		if(player != null)
+		double[] targetLocation = {0,0,0};
+
+		// 距離の測定
+		if(hukidashiValues.isPlayer)
 		{
-			playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - player.posX, 2) + Math.pow(MC.thePlayer.posY - player.posY, 2) + Math.pow(MC.thePlayer.posZ - player.posZ, 2));
+			EntityPlayer player = MC.theWorld.getPlayerEntityByName(hukidashiValues.sendPlayerString);
+			if(player != null && !hukidashiValues.sendMeFlag)
+			{
+				targetLocation[0] = player.posX;
+				targetLocation[1] = player.posY;
+				targetLocation[2] = player.posZ;
+			}
+			else if(player == null)
+			{
+				System.out.println("PlayerNotFound! : " + hukidashiValues.sendPlayerString);
+				hukidashiValues.sendMeFlag = true;
+			}
+		}
+		else
+		{
+			targetLocation = hukidashiValues.worldPosition;
 		}
 
-		if(enableAllMessage || playerSpace < playerSpaceOption)  // 全てのメッセージを表示する、もしくは描画距離以内だったとき
+		playerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - targetLocation[0], 2) + Math.pow(MC.thePlayer.posY - targetLocation[1], 2) + Math.pow(MC.thePlayer.posZ - targetLocation[2], 2));
+
+		// 全てのメッセージを表示する、描画距離以内、自分で発言したことにするフラグ のどれかがtrue
+		if(enableAllMessage || playerSpace < playerSpaceOption || hukidashiValues.sendMeFlag)
 		{
 			float alphaFloat = 1;
 
@@ -270,8 +195,9 @@ public class HukidashiChatTick implements ITickHandler
 			}
 			else
 			{
+				// インスタンス削除要請を出して終了
 				arrayDeleteValues.add(hukidashiValues);
-				alphaFloat = 0;
+				return;
 			}
 
 			// テクスチャの描画
@@ -290,9 +216,8 @@ public class HukidashiChatTick implements ITickHandler
 			int count = 0;
 			for(String viewStrings : hukidashiValues.trimmedChatStrings)
 			{
-				if(!viewStrings.equals("") || count < stringColumn || fadeAlpha != 0)
+				if(!viewStrings.equals("") && count < stringColumn && fadeAlpha != 0)
 				{
-					System.out.println(fadeAlpha);
 					MC.fontRenderer.drawString(viewStrings, hukidashiValues.guiPositionX + textPosition[2], hukidashiValues.guiPositionY + textPosition[3] + (count * MC.fontRenderer.FONT_HEIGHT), tempChatColor, textShadow);
 				}
 				else
@@ -300,6 +225,35 @@ public class HukidashiChatTick implements ITickHandler
 					break;
 				}
 				count++;
+			}
+
+			// フキダシの描画
+			try
+			{
+
+				if(viewHukidashi && !hukidashiValues.sendMeFlag)
+				{
+					// 吹き出しの表示処理開始
+					if(playerSpaceOption > playerSpace)
+					{
+						int[] hukidashiPixels = checkHukidashiView(MC, targetLocation, playerSpace);
+
+						if(hukidashiPixels[0] == 1)
+						{
+							// 吹き出しの表示
+							renderHukidashi(hukidashiValues, MC, gui, alphaFloat, hukidashiPixels);
+						}
+					}
+				}
+			}
+
+			catch (Exception e)
+			{
+				if(!hukidashiValues.sendMeFlag)
+				{
+					hukidashiValues.sendMeFlag = true;
+					System.out.println(e);
+				}
 			}
 		}
 	}
@@ -312,65 +266,71 @@ public class HukidashiChatTick implements ITickHandler
 
 		if(MC.theWorld != null)
 		{
-			if(MC.currentScreen == null)
+			int listNumber = checkAvailableNumber(arrayHukidashiValues);
+
+			if(listNumber < allHukidashiCount && arrayBufferHukidashiValues.size() > 0)
 			{
-				listenerString = getChatListener.getListenerString();
-				String[] resetStrings = {"",""};
-				getChatListener.setListenerString(resetStrings);
+				// インスタンス生成
+				HukidashiValues hukidashiValues = getBufferHukidashiValues(listNumber);
 
-				if(!listenerString[0].equals(""))
+				hukidashiValues.setViewTimes(displayTime[0], displayTime[1], displayTime[2]);
+
+				// GUIスケールの倍率の補正
+				ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
+
+				int tempGuiPosition[] = {guiRawPosition[listNumber][0], guiRawPosition[listNumber][1]};
+
+				// 位置の調整
+				if(guiRawPosition[listNumber][0] < 0)
 				{
-					//System.out.println("catch string : " + listenerString[0]);
-					int listNumber = checkAvailableNumber(arrayHukidashiValues);
-
-					if(listNumber < allHukidashiCount)
-					{
-						// インスタンス生成
-						HukidashiValues hukidashiValues = new HukidashiValues(listNumber);
-						hukidashiValues.setViewTimes(displayTime[0], displayTime[1], displayTime[2]);
-
-						// GUIスケールの倍率の補正
-						ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
-
-						int tempGuiPosition[] = {guiRawPosition[listNumber][0], guiRawPosition[listNumber][1]};
-
-						// 位置の調整
-						if(guiRawPosition[listNumber][0] < 0)
-						{
-							tempGuiPosition[0] = SR.getScaledWidth() + guiRawPosition[listNumber][0] - textureSize[0];
-						}
-
-						if(guiRawPosition[listNumber][1] < 0)
-						{
-							tempGuiPosition[1] = SR.getScaledHeight() + guiRawPosition[listNumber][1] - textureSize[1];
-						}
-						// GUIの位置の設定
-						hukidashiValues.setGuiViewPosition(tempGuiPosition[0], tempGuiPosition[1]);
-
-						hukidashiValues.setHukidashiStrings(listenerString[0], listenerString[1]);
-
-						hukidashiValues.setTrimmedChatStrings(trimChatString(MC, listenerString[1]));
-
-						arrayHukidashiValues.add(hukidashiValues);
-					}
+					tempGuiPosition[0] = SR.getScaledWidth() + guiRawPosition[listNumber][0] - textureSize[0];
 				}
 
-				if(arrayHukidashiValues.size() > 0)
+				if(guiRawPosition[listNumber][1] < 0)
 				{
-					for(HukidashiValues values : arrayHukidashiValues)
-					{
-						renderHukidashiMainGUI(values);
-					}
-
-					checkAndRemoveInstance(arrayHukidashiValues, arrayDeleteValues);
+					tempGuiPosition[1] = SR.getScaledHeight() + guiRawPosition[listNumber][1] - textureSize[1];
 				}
+
+				// GUIの位置の設定
+
+				// 1ピクセルあたりの角度の計算
+				gameSettingFov = 70 + (int)(MC.gameSettings.fovSetting * 40);
+				widthPerFov = ((float)SR.getScaledWidth() / (float)gameSettingFov);
+
+				// ゲーム画面の中央の座標
+				centerPoint[0] = SR.getScaledWidth() / 2;
+				centerPoint[1] = SR.getScaledHeight() / 2;
+
+				hukidashiValues.setGuiViewPosition(tempGuiPosition[0], tempGuiPosition[1]);
+
+				hukidashiValues.setGuiNearPoint(getGuiNearPoints(tempGuiPosition[0], tempGuiPosition[1]));
+
+				hukidashiValues.setTrimmedChatStrings(trimChatString(MC, hukidashiValues.chatString));
+
+				arrayHukidashiValues.add(hukidashiValues);
+			}
+		}
+
+		// 通常時にのみ描画を開始する
+		if(MC.currentScreen == null)
+		{
+			if(arrayHukidashiValues.size() > 0)
+			{
+				for(HukidashiValues values : arrayHukidashiValues)
+				{
+					renderHukidashiMainGUI(values);
+				}
+
+				checkAndRemoveInstance(arrayHukidashiValues, arrayDeleteValues);
 			}
 		}
 	}
 
 
-	private void renderHukidashi(Minecraft MC, Gui gui, float alphaFloat, int suspendNumber, int[] hukidashiPixels)
+	private void renderHukidashi(HukidashiValues hukidashiValues, Minecraft MC, Gui gui, float alphaFloat, int[] hukidashiPixels)
 	{
+		int[] nearCenterPoint = {hukidashiValues.guiNearPointX, hukidashiValues.guiNearPointY};
+
 		ScaledResolution SR = new ScaledResolution(MC.gameSettings, MC.displayWidth, MC.displayHeight);
 		float SRMagnification = MC.displayHeight / SR.getScaledHeight();
 		//MC.fontRenderer.drawString("o", ((int)((SR.getScaledWidth() / 2) + (hukidashiPixels[1] / SRMagnification))), ((int)((SR.getScaledHeight() / 2) + (hukidashiPixels[2] / SRMagnification))), 16777215);
@@ -378,8 +338,8 @@ public class HukidashiChatTick implements ITickHandler
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, (float)alpha * alphaFloat /255);
 		MC.getTextureManager().bindTexture(guiHukidashi);
 
-		GL11.glTranslatef(nearCenterPoint[suspendNumber][0], nearCenterPoint[suspendNumber][1], 0);
-		GL11.glRotatef((float) (Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
+		GL11.glTranslatef(nearCenterPoint[0], nearCenterPoint[1], 0);
+		GL11.glRotatef((float) (Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[0])) / Math.PI * 180), 0, 0, 1.0F);
 		GL11.glTranslatef(-hukidashiRotation[0], -hukidashiRotation[1], 0);
 		// GUI位置の調整
 
@@ -387,67 +347,47 @@ public class HukidashiChatTick implements ITickHandler
 		// 吹き出しの描画
 
 		GL11.glTranslatef(hukidashiRotation[0], hukidashiRotation[1], 0);
-		GL11.glRotatef((float) -(Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[suspendNumber][1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[suspendNumber][0])) / Math.PI * 180), 0, 0, 1.0F);
-		GL11.glTranslatef(-nearCenterPoint[suspendNumber][0], -nearCenterPoint[suspendNumber][1], 0);
+		GL11.glRotatef((float) -(Math.atan2((((SR.getScaledHeight_double() / 2) + (hukidashiPixels[2] / SRMagnification)) - nearCenterPoint[1]), (((SR.getScaledWidth_double() / 2) + (hukidashiPixels[1] / SRMagnification)) - nearCenterPoint[0])) / Math.PI * 180), 0, 0, 1.0F);
+		GL11.glTranslatef(-nearCenterPoint[0], -nearCenterPoint[1], 0);
 		// GUI位置を元に戻す
 	}
 
-	private int[] checkHukidashiView(Minecraft MC, EntityPlayer tempPlayer, double tempPlayerSpace)
+	int[] getGuiNearPoints(int guiPositionX, int guiPositionY)
 	{
-		// 画面内に相手プレイヤーがいるかの確認
+		int[] returnInt = {0, 0};
 
-		float viewYaw = MathHelper.wrapAngleTo180_float(MC.thePlayer.rotationYaw);
-		int widthPixel = 0, heightPixel = 0;
-		// 右が+、上も+
-
-		tempPlayerSpace = Math.sqrt(Math.pow(MC.thePlayer.posX - tempPlayer.posX, 2) + Math.pow(MC.thePlayer.posY - tempPlayer.posY, 2) + Math.pow(MC.thePlayer.posZ - tempPlayer.posZ, 2));
-		// プレイヤー間の距離の測定
-
-		boolean returnBoolean = false;
-
-		if(viewYaw < 0)
-		{
-			viewYaw += 180;
-		}
-		else if(viewYaw > 0)
-		{
-			viewYaw -= 180;
-		}
-
-		float playerSpaceYaw = (float)(-Math.atan2(MC.thePlayer.posX - tempPlayer.posX, MC.thePlayer.posZ - tempPlayer.posZ) / Math.PI * 180);
-		float playerSpacePitch = (float)(Math.asin((MC.thePlayer.posY - tempPlayer.posY - 1) / tempPlayerSpace) / Math.PI * 180);
-
-		if(tempPlayerSpace < playerSpaceOption && tempPlayerSpace > 1)
-		{
-			if(playerSpacePitch - (widthPerFov * MC.displayHeight) < MC.thePlayer.rotationPitch && playerSpacePitch + (widthPerFov * MC.displayHeight) > MC.thePlayer.rotationPitch && Math.abs(playerSpacePitch) < 75)
+		// GUIの四隅の座標の取得
+		int[][] tempPoint =
 			{
-				heightPixel = (int)((playerSpacePitch - MC.thePlayer.rotationPitch) * widthPerFov);
+				{guiPositionX + hukidashiInGui[0], guiPositionY + hukidashiInGui[1]},
+				{guiPositionX + textureSize[0] - hukidashiInGui[0], guiPositionY + hukidashiInGui[1]},
+				{guiPositionX + hukidashiInGui[0], guiPositionY + textureSize[1] - hukidashiInGui[1]},
+				{guiPositionX + textureSize[0] - hukidashiInGui[0], guiPositionY + textureSize[1] - hukidashiInGui[1]}
+			};
 
-				if (viewYaw < playerSpaceYaw + gameSettingFov && viewYaw > playerSpaceYaw - gameSettingFov)
-				{
-					returnBoolean = true;
-					widthPixel = (int)((playerSpaceYaw - viewYaw) * widthPerFov);
-				}
-				else if(180 < playerSpaceYaw + gameSettingFov && (playerSpaceYaw + gameSettingFov) > viewYaw + 360)
-				{
-					returnBoolean = true;
-					widthPixel = (int)((playerSpaceYaw - viewYaw - 360) * widthPerFov);
-				}
-				else if(-180 > playerSpaceYaw - gameSettingFov && (playerSpaceYaw - gameSettingFov) < viewYaw - 360)
-				{
-					returnBoolean = true;
-					widthPixel = (int)((playerSpaceYaw - viewYaw + 360) * widthPerFov);
-				}
+		// 最短の位置を調べる
+		float[] tempCenterPoint = new float[4];
+		tempCenterPoint[0] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[0][0]), 2) + Math.pow((centerPoint[1] - tempPoint[0][1]), 2));
+		tempCenterPoint[1] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[1][0]), 2) + Math.pow((centerPoint[1] - tempPoint[1][1]), 2));
+		tempCenterPoint[2] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[2][0]), 2) + Math.pow((centerPoint[1] - tempPoint[2][1]), 2));
+		tempCenterPoint[3] = (float) Math.sqrt(Math.pow((centerPoint[0] - tempPoint[3][0]), 2) + Math.pow((centerPoint[1] - tempPoint[3][1]), 2));
+
+		float tempMin = Float.MAX_VALUE;
+
+		for(int k = 0; k < 4; k++)
+		{
+			if(tempMin > tempCenterPoint[k])
+			{
+				tempMin = tempCenterPoint[k];
+				returnInt[0] = tempPoint[k][0];
+				returnInt[1] = tempPoint[k][1];
 			}
 		}
-
-		// 実行するか, 横のピクセル, 縦のピクセル
-		int[] returnInt = {BooleanUtils.toInteger(returnBoolean), widthPixel, heightPixel};
 
 		return returnInt;
 	}
 
-	private int[] checkHukidashiView(Minecraft MC, float[] location, double tempPlayerSpace)
+	private int[] checkHukidashiView(Minecraft MC, double[] location, double tempPlayerSpace)
 	{
 		// 画面内に相手プレイヤーがいるかの確認
 		// location [X Y Z] の順;
@@ -471,9 +411,9 @@ public class HukidashiChatTick implements ITickHandler
 		}
 
 		float playerSpaceYaw = (float)(-Math.atan2(MC.thePlayer.posX - location[0], MC.thePlayer.posZ - location[2]) / Math.PI * 180);
-		float playerSpacePitch = (float)(Math.asin((MC.thePlayer.posY - location[1] - 1) / tempPlayerSpace) / Math.PI * 180);
+		float playerSpacePitch = (float)(Math.asin((MC.thePlayer.posY - location[1]) / tempPlayerSpace) / Math.PI * 180);
 
-		if(tempPlayerSpace < playerSpaceOption && tempPlayerSpace > 1)
+		if(tempPlayerSpace < playerSpaceOption && tempPlayerSpace > 0.5)
 		{
 			if(playerSpacePitch - (widthPerFov * MC.displayHeight) < MC.thePlayer.rotationPitch && playerSpacePitch + (widthPerFov * MC.displayHeight) > MC.thePlayer.rotationPitch && Math.abs(playerSpacePitch) < 75)
 			{
@@ -550,7 +490,6 @@ public class HukidashiChatTick implements ITickHandler
 		for(HukidashiValues deleteValues : arrayDeleteValues)
 		{
 			returnBoolean = arrayHukidashiValues.remove(deleteValues);
-			//System.out.println("Removed Object arrayList");
 		}
 
 		return returnBoolean;
@@ -578,17 +517,63 @@ public class HukidashiChatTick implements ITickHandler
 		return returnInt;
 	}
 
-	void bufferedHukidashi(String[] setStrings)
+	void setBufferedHukidashiValues(String[] setStrings, boolean sendMeFlag)
 	{
-		bufferedString = setStrings;
+		HukidashiValues hukidashiValues = new HukidashiValues(-1);
+
+		hukidashiValues.setHukidashiStrings(setStrings[0], setStrings[1]);
+		hukidashiValues.sendMeFlag = sendMeFlag;
+
+		setBufferedHukidashiValues(hukidashiValues);
 	}
 
-	String[] getBufferString()
+	// どこかの座標で発生したとき
+	void setBufferedHukidashiValues(String[] setStrings, double posX, double posY, double posZ)
 	{
-		String[] temp = bufferedString;
-		bufferedString[0] = "";
-		bufferedString[1] = "";
-		return temp;
+		HukidashiValues hukidashiValues = new HukidashiValues(-1);
+		double[] worldPosition = {posX, posY, posZ};
+
+		hukidashiValues.setHukidashiStrings(setStrings[0], setStrings[1]);
+		hukidashiValues.setWorldPosition(worldPosition);
+
+		setBufferedHukidashiValues(hukidashiValues);
+	}
+
+	void setBufferedHukidashiValues(String nameStrings, String[] chatStrings, double posX, double posY, double posZ)
+	{
+		HukidashiValues hukidashiValues = new HukidashiValues(-1);
+		double[] worldPosition = {posX, posY, posZ};
+
+		hukidashiValues.setHukidashiStrings(nameStrings, chatStrings[0]);
+		hukidashiValues.setTrimmedChatStrings(chatStrings);
+		hukidashiValues.setWorldPosition(worldPosition);
+
+		setBufferedHukidashiValues(hukidashiValues);
+	}
+
+	// 配列に追加
+	void setBufferedHukidashiValues(HukidashiValues hukidashiValues)
+	{
+		if(arrayBufferHukidashiValues.size() < 2)
+		{
+			arrayBufferHukidashiValues.add(hukidashiValues);
+		}
+	}
+
+	HukidashiValues getBufferHukidashiValues(int listNumber)
+	{
+		HukidashiValues returnHukidashiValues = null;
+
+		if(arrayBufferHukidashiValues.size() >= 1)
+		{
+			returnHukidashiValues = arrayBufferHukidashiValues.get(0);
+
+			returnHukidashiValues.listNumber = listNumber;
+
+			arrayBufferHukidashiValues.remove(0);
+		}
+
+		return returnHukidashiValues;
 	}
 
 	@Override

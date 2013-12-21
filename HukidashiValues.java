@@ -4,8 +4,9 @@ class HukidashiValues
 {
 	int listNumber = 0;  // このインスタンスの番号(超重要?)
 
-	String nameString = "";  // 名前欄
-	String chatString = "";  // 表示するメッセージ
+	String nameString;  // 名前欄
+	String sendPlayerString;  // 送信者の名前
+	String chatString;  // 表示するメッセージ
 
 	String[] trimmedChatStrings;  // 区切った後のメッセージ
 
@@ -18,11 +19,17 @@ class HukidashiValues
 	int viewTime = 0;
 	int fadeoutTime = 0;
 
-	// 送信者の名前
-	String sendPlayerString = "";
 	// 自分が送信したことにするフラグ
 	boolean sendMeFlag = false;
 
+	int guiNearPointX = 0;
+	int guiNearPointY = 0;
+
+	// 特定の位置を指定する場合
+	boolean isPlayer = true;
+
+	// ワールドでの位置 X,Y,Z
+	double[] worldPosition;
 
 	// コンストラクタ
 	HukidashiValues(int listNumber)
@@ -48,19 +55,44 @@ class HukidashiValues
 	// 名前とチャット内容
 	void setHukidashiStrings(String nameString, String chatString)
 	{
-		this.nameString = nameString;
-		this.sendPlayerString = nameString;
+		if(this.nameString == null)
+		{
+			this.nameString = nameString;
+		}
 
-		this.chatString = chatString;
+		if (this.sendPlayerString == null)
+		{
+			this.sendPlayerString = nameString;
+		}
+
+		if(this.chatString == null)
+		{
+			this.chatString = chatString;
+		}
 	}
 
 	void setTrimmedChatStrings(String[] trimmedStrings)
 	{
-		this.trimmedChatStrings = trimmedStrings;
+		if(this.trimmedChatStrings == null)
+		{
+			this.trimmedChatStrings = trimmedStrings;
+		}
 	}
 
 	void setSendPlayerString(String sendPlayerString)
 	{
 		this.sendPlayerString = sendPlayerString;
+	}
+
+	void setGuiNearPoint(int[] guiNearPoint)
+	{
+		this.guiNearPointX = guiNearPoint[0];
+		this.guiNearPointY = guiNearPoint[1];
+	}
+
+	void setWorldPosition(double[] worldPosition)
+	{
+		this.worldPosition = worldPosition;
+		this.isPlayer = false;
 	}
 }

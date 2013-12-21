@@ -11,14 +11,26 @@ public class HukidashiAPI
 		this.hukidashiChatTick = hukidashiChatTick;
 	}
 
-	static public void setHukidashi(String nameString, String chatString)
+	static public void setHukidashiSendMe(String nameString, String chatString)
 	{
 		String[] sendStrings = {nameString, chatString};
-		hukidashiChatTick.bufferedHukidashi(sendStrings);
+		hukidashiChatTick.setBufferedHukidashiValues(sendStrings, true);
 	}
 
-	static public void setHukidashi(String nameString, String cString, int blockX, int blockY, int blockZ)
+	static public void setHukidashi(String nameString, String chatString, boolean sendMeFlag)
 	{
+		String[] sendStrings = {nameString, chatString};
+		hukidashiChatTick.setBufferedHukidashiValues(sendStrings, false);
+	}
 
+	static public void setHukidashi(String nameString, String chatString, double posX, double posY, double posZ)
+	{
+		String[] sendStrings = {nameString, chatString};
+		hukidashiChatTick.setBufferedHukidashiValues(sendStrings, posX, posY, posZ);
+	}
+
+	static public void setHukidashi(String nameString, String[] chatStrings, double posX, double posY, double posZ)
+	{
+		hukidashiChatTick.setBufferedHukidashiValues(nameString, chatStrings, posX, posY, posZ);
 	}
 }

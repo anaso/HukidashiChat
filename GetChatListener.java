@@ -33,13 +33,14 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 	String ColorCodeString = "§[0-9a-fA-F]";
 	Pattern ColorCodePattern = Pattern.compile(ColorCodeString);
 
-	String[] listenerString = {"",""};
-
 	HashMap Options;
 
-	GetChatListener(HashMap Options)
+	HukidashiChatTick hukidashiChatTick;
+
+	GetChatListener(HashMap Options, HukidashiChatTick hukidashiChatTick)
 	{
 		this.Options = Options;
+		this.hukidashiChatTick = hukidashiChatTick;
 
 		mutePlayer = (String[])Options.get("MutePlayer");
 		if(mutePlayer != null)
@@ -108,7 +109,10 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 				getMessage[1] = matcher.replaceAll("");
 			}
 
-			listenerString = getMessage;
+			if(!getMessage[0].equals("") && !getMessage.equals(""))
+			{
+				hukidashiChatTick.setBufferedHukidashiValues(getMessage, getMessage[0].equals(MC.thePlayer.username));
+			}
 		}
 
 		return message;
@@ -209,15 +213,5 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 		}
 
 		return tempReturn;
-	}
-
-	String[] getListenerString()
-	{
-		return listenerString;
-	}
-
-	void setListenerString(String[] setter)
-	{
-		listenerString = setter;
 	}
 }
