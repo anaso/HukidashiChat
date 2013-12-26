@@ -160,7 +160,7 @@ public class HukidashiChatTick implements ITickHandler
 				targetLocation[1] = player.posY;
 				targetLocation[2] = player.posZ;
 			}
-			else if(player == null)
+			else if(player == null && !hukidashiValues.sendMeFlag)
 			{
 				System.out.println("PlayerNotFound! : " + hukidashiValues.sendPlayerString);
 				hukidashiValues.sendMeFlag = true;
