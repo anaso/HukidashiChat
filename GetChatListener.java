@@ -115,6 +115,8 @@ public class GetChatListener implements IChatListener, IConnectionHandler
 			}
 		}
 
+		//System.out.println(message.message);
+		//message.message = "{\"translate\":\"chat.type.text\",\"using\":[\"書き換えました\",\"\"]}";
 		return message;
 	}
 
