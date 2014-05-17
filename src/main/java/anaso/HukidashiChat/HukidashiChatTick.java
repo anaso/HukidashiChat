@@ -42,7 +42,7 @@ public class HukidashiChatTick{
 	int stringWidth = 83;  // 横の長さ
 
 	ResourceLocation guiHukidashiMain = new ResourceLocation("hukidashichat:textures/gui/hukidashi_gui.png");
-	ResourceLocation guiHukidashi = new ResourceLocation("hukidashichat:/textures/gui/hukidashi.png");
+	ResourceLocation guiHukidashi = new ResourceLocation("hukidashichat:textures/gui/hukidashi.png");
 
 
 	boolean enableAllMessage = false;  //全てのメッセージを表示するか
