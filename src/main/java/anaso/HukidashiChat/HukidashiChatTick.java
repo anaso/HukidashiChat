@@ -301,7 +301,6 @@ public class HukidashiChatTick{
 		if(hukidashiScale > 1.5F){
 			hukidashiScale = 1.5F;
 		}
-		System.out.println(hukidashiScale + " : " + hukidashiSize[0]);
 
 		// GUI位置の調整
 		//GL11.glTranslatef(nearCenterPoint[0], nearCenterPoint[1], 0);
